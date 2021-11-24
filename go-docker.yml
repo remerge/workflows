@@ -1,0 +1,74 @@
+name: Build go binary and build + push docker image
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        required: true
+        type: string
+      # tags:
+      #   required: true
+      #   type: string
+      # labels:
+      #   required: true
+      #   type: string
+    secrets:
+      gh_auth_token:
+        required: true
+# ${{ inputs.required }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      env:
+        GOPRIVATE: github.com/remerge
+      with:
+        go-version: 1.15
+
+    - name: Update git config
+      env:
+        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
+      run: |
+        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+
+    - name: Test
+      env:
+        GOPRIVATE: github.com/remerge
+      run: |
+        make lint test-nocache
+
+    - name: Build
+      # if: ${{ github.event_name != 'pull_request' }}
+      run: make dist
+
+    - name: Log in to the Container registry
+      # if: ${{ github.event_name != 'pull_request' }}
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GH_TOKEN }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      # if: ${{ github.event_name != 'pull_request' }}
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.image_name }}
+        tags: |
+          type=sha
+
+    - name: Build and push Docker image
+      # if: ${{ github.event_name != 'pull_request' }}
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        # tags: ${{ inputs.tags }}
+        # labels: ${{ inputs.labels }}
