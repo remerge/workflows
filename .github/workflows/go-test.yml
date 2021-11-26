@@ -1,0 +1,34 @@
+name: Run Go test
+
+on:
+  workflow_call:
+    inputs:
+      golang_version:
+        type: string
+        required: false
+    secrets:
+      gh_auth_token:
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      env:
+        GOPRIVATE: github.com/remerge
+      with:
+        go-version: ${{ inputs.golang_version || 1.15 }}
+
+    - name: Update git config
+      env:
+        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
+      run: |
+        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+
+    - name: Test
+      env:
+        GOPRIVATE: github.com/remerge
+      run: make lint test-nocache
