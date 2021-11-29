@@ -23,7 +23,7 @@ jobs:
     needs: setup
     runs-on: [self-hosted, linux]
     strategy:
-      matrix:  ${{fromJSON(setup.job1.outputs.matrix)}}
+      matrix:  ${{fromJSON(needs.setup.outputs.matrix)}}
           
     steps:
     - uses: actions/checkout@v2
