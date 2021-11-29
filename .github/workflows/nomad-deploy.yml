@@ -14,14 +14,12 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    env:
-      CLUSTER_DETAILS: ${{ inputs.cluster_details }}
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
         run: |
-          data="{\"include\":[$CLUSTER_DETAILS]}"
+          data="{\"include\": [ ${{ inputs.cluster_details }} ]}"
           echo "::set-output name=matrix::$data"
   nomad:
     needs: setup
