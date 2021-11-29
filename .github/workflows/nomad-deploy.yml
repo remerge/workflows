@@ -20,13 +20,15 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
-        run: echo "::set-output name=matrix::{\"include\":[ $CLUSTER_DETAILS ]}"
+        run: |
+          data="{\"include\":[$CLUSTER_DETAILS]}"
+          echo "::set-output name=matrix::$data"
   nomad:
     needs: setup
     runs-on: [self-hosted, linux]
     strategy:
-      matrix:  ${{fromJSON(needs.setup.outputs.matrix)}}
-          
+      matrix: ${{fromJSON(needs.setup.outputs.matrix)}}
+       
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
