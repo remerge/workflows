@@ -6,11 +6,12 @@ on:
       golang_version:
         type: string
         required: false
+        default: "1.15"
     secrets:
       gh_auth_token:
         required: true
 jobs:
-  build:
+  go-test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -20,7 +21,7 @@ jobs:
       env:
         GOPRIVATE: github.com/remerge
       with:
-        go-version: ${{ inputs.golang_version || 1.15 }}
+        go-version: ${{ inputs.golang_version }}
 
     - name: Update git config
       env:
