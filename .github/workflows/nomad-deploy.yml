@@ -15,7 +15,8 @@ jobs:
   nomad:
     runs-on: [self-hosted, linux]
     strategy:
-      matrix: ${{fromJson(inputs.cluster_details)}}
+      matrix:
+        include: ${{fromJson(inputs.cluster_details)}}
           
     steps:
     - uses: actions/checkout@v2
