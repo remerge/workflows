@@ -15,7 +15,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     env:
-      CLUSTER_DETAILS: ${{ inputs.cluster_details }}
+      CLUSTER_DETAILS: ${{ toJson(inputs.cluster_details) }}
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
