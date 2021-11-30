@@ -19,15 +19,6 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    # if [[ -z $changed_dir ]]; then
-    #           changed_dir="{\"name\":\"$dir\"}"
-    #         else
-    #           changed_dir="$changed_dir, {\"name\":\"$dir\"}"
-    #         fi
-    #       done < dirs.txt
-
-    #       changed_dir="{\"include\":[$changed_dir]}"
-    #       echo "::set-output name=matrix::$changed_dir"
       - id: set-matrix
         run: |
           data="{\"include\":[$CLUSTER_DETAILS]}"
