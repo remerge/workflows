@@ -21,7 +21,8 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          echo "::set-output name=matrix::$CLUSTER_DETAILS"
+          data="{\"include\": [ $CLUSTER_DETAILS ]}"
+          echo "::set-output name=matrix::$data"
   nomad:
     needs: setup
     runs-on: [self-hosted, linux]
