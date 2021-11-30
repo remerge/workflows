@@ -36,7 +36,7 @@ jobs:
     needs: setup
     runs-on: [self-hosted, linux]
     strategy:
-      matrix: ${{ fromJSON("{\"include\":[{\"name\":\"dir\"}]}") }}
+      matrix: ${{ fromJSON("[{\"name\":\"dir\"}]") }}
        
     steps:
     - uses: actions/checkout@v2
