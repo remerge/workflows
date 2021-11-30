@@ -13,7 +13,6 @@ on:
         required: true
 jobs:
   nomad:
-    needs: setup
     runs-on: [self-hosted, linux]
     strategy:
       matrix:
