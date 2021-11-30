@@ -12,9 +12,6 @@ on:
       secrets_data:
         required: true
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-
   nomad:
     needs: setup
     runs-on: [self-hosted, linux]
