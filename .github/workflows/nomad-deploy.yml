@@ -14,21 +14,13 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    env:
-      CLUSTER_DETAILS: ${{ toJson(inputs.cluster_details) }}
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - id: set-matrix
-        run: |
-          data="{\"include\":[$CLUSTER_DETAILS]}"
-          echo "::set-output name=matrix::$data"
+
   nomad:
     needs: setup
     runs-on: [self-hosted, linux]
     strategy:
       matrix:
-        node-version: ${{fromJSON("[\"14.x\", \"16.x\"]")}}
+        cluster_detail: ${{fromJson(inputs.cluster_details)}}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
@@ -53,10 +45,10 @@ jobs:
       id: nomad_plan
       env:
         NOMAD_TOKEN: ${{ secrets.secrets_data[matrix.api_key_name] }}
-        NOMAD_API: ${{ matrix.api_url }}
+        NOMAD_API: ${{ matrix.cluster_detail.api_url }}
         NOMAD_VAR_task_image: ${{ steps.meta.outputs.tags }}
-        NOMAD_VAR_cluster: ${{ matrix.cluster }}
-        NOMAD_VAR_environment: ${{ matrix.environment }}
+        NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
+        NOMAD_VAR_environment: ${{ matrix.cluster_detail.environment }}
       run: |
         res=$(nomad plan -token="$NOMAD_TOKEN" -address="$NOMAD_API" nomad.hcl) || ( [ $? -eq 1 ] && true)
 
@@ -84,9 +76,9 @@ jobs:
       # if: ${{ github.event_name != 'pull_request' }}
       env:
         NOMAD_TOKEN: ${{ secrets.secrets_data[matrix.api_key_name] }}
-        NOMAD_API: ${{ matrix.api_url }}
+        NOMAD_API: ${{ matrix.cluster_detail.api_url }}
         NOMAD_VAR_task_image: ${{ steps.meta.outputs.tags }}
-        NOMAD_VAR_cluster: ${{ matrix.cluster }}
-        NOMAD_VAR_environment: ${{ matrix.environment }}
+        NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
+        NOMAD_VAR_environment: ${{ matrix.cluster_detail.environment }}
       run: |
         nomad run -token="$NOMAD_TOKEN" -address="$NOMAD_API" -detach nomad.hcl
