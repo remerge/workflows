@@ -9,8 +9,11 @@ on:
         required: true
         type: string
     secrets:
-      secrets_data:
-        required: true
+      GCE_NOMAD_TOKEN:
+        required: false
+      DW1_NOMAD_TOKEN:
+        required: false
+
 jobs:
   nomad:
     runs-on: [self-hosted, linux]
@@ -40,7 +43,7 @@ jobs:
     - name: Run Nomad Plan
       id: nomad_plan
       env:
-        NOMAD_TOKEN: ${{ secrets.secrets_data[matrix.api_key_name] }}
+        NOMAD_TOKEN: ${{ secrets[matrix.api_key_name] }}
         NOMAD_API: ${{ matrix.cluster_detail.api_url }}
         NOMAD_VAR_task_image: ${{ steps.meta.outputs.tags }}
         NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
@@ -71,7 +74,7 @@ jobs:
     - name: Deploy to Nomad
       # if: ${{ github.event_name != 'pull_request' }}
       env:
-        NOMAD_TOKEN: ${{ secrets.secrets_data[matrix.api_key_name] }}
+        NOMAD_TOKEN: ${{ secrets[matrix.api_key_name] }}
         NOMAD_API: ${{ matrix.cluster_detail.api_url }}
         NOMAD_VAR_task_image: ${{ steps.meta.outputs.tags }}
         NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
