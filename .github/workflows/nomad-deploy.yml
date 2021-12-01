@@ -43,7 +43,7 @@ jobs:
     - name: Run Nomad Plan
       id: nomad_plan
       env:
-        NOMAD_TOKEN: ${{ secrets[matrix.api_key_name] }}
+        NOMAD_TOKEN: ${{ secrets["gce_nomad_token"] }}
         NOMAD_API: ${{ matrix.cluster_detail.api_url }}
         NOMAD_VAR_task_image: ${{ steps.meta.outputs.tags }}
         NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
