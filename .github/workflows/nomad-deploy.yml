@@ -26,7 +26,6 @@ jobs:
       with:
         node-version: '14'
     - name: Extract metadata (tags, labels) for Docker
-      # if: ${{ github.event_name != 'pull_request' }}
       id: meta
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
@@ -34,7 +33,6 @@ jobs:
         tags: |
           type=sha
     - name: Install Nomad
-      # if: ${{ github.event_name != 'pull_request' }}
       run: |
         curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
@@ -72,7 +70,7 @@ jobs:
           })
 
     - name: Deploy to Nomad
-      # if: ${{ github.event_name != 'pull_request' }}
+      if: ${{ github.event_name != 'pull_request' }}
       env:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_API: ${{ matrix.cluster_detail.api_url }}
