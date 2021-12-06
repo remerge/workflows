@@ -38,8 +38,8 @@ jobs:
         sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
         sudo apt-get update && sudo apt-get install nomad
 
-    - name: Deploy to Nomad
-      if: ${{ github.event_name != 'pull_request' }}
+    - name: Run Nomad Plan
+      id: nomad_plan
       env:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_API: ${{ matrix.cluster_detail.api_url }}
@@ -47,4 +47,24 @@ jobs:
         NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
         NOMAD_VAR_environment: ${{ matrix.cluster_detail.environment }}
       run: |
-        nomad run -token="$NOMAD_TOKEN" -address="$NOMAD_API" -detach nomad.hcl
+        res=$(nomad plan -token="$NOMAD_TOKEN" -address="$NOMAD_API" nomad.hcl) || ( [ $? -eq 1 ] && true)
+
+        echo $res
+        res="${res//'%'/'%25'}"
+        res="${res//$'\n'/'%0A'}"
+        res="${res//$'\r'/'%0D'}"
+
+        echo "::set-output name=stdout::$res"
+
+    - name: PR Comment
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/github-script@v2
+      with:
+        github-token: ${{secrets.github_token}}
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Nomad Plan \n ${{ steps.nomad_plan.outputs.stdout }}`
+          })
