@@ -29,7 +29,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
-        images: ${{ inputs.registry }}/${{ inputs.image_name }}
+        images: ${{ inputs.image_name }}
         tags: |
           type=sha
     - name: Install Nomad
