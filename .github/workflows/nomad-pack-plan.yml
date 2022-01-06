@@ -86,10 +86,12 @@ jobs:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
       run: |
-        res=$(bin/nomad-pack plan --var='task_image=${{ inputs.image_name }}' --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
+        res=$(bin/nomad-pack plan ${{ inputs.name }} \
+        --var='task_image=${{ inputs.image_name }}' \
+        --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
-        --var='job_name=${{ inputs.name }}' \
-        --name=${{ inputs.name }} --var-file=${{ inputs.variables_file_name }}) \
+        --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
+        --var-file=${{ inputs.variables_file_name }}) \
         || ( [ $? -eq 1 ] && true)
 
         echo $res
