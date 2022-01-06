@@ -95,8 +95,8 @@ jobs:
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
-        --var-file=${{ inputs.variables_file_name }}) \
-        --registry=${{ inputs.pack_name }} || ( [ $? -eq 1 ] && true)
+        --var-file=${{ inputs.variables_file_name }} \
+        --registry=${{ inputs.pack_name }} ) || ( [ $? -eq 1 ] && true)
 
         echo $res
         res="${res//'%'/'%25'}"
