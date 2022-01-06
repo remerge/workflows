@@ -73,12 +73,16 @@ jobs:
       id: meta
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
       with:
-        images: ${{ inputs.registry }}/${{ inputs.image_name }}
+        images: ${{ inputs.image_name }}
         tags: |
           type=sha
     - name: Install Nomad-Pack
       run: |
         curl -o nomad-pack.zip $NOMAD_PACK_BINARY && unzip nomad-pack.zip -d bin
+
+    - name: Add Nomad pack registry
+      run: |
+        nomad-pack registry add ${{ inputs.pack_name }} ${{ inputs.registry }}
 
     - name: Run Nomad Plan
       id: nomad_plan
@@ -92,7 +96,7 @@ jobs:
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
         --var-file=${{ inputs.variables_file_name }}) \
-        || ( [ $? -eq 1 ] && true)
+        --registry=${{ inputs.pack_name }} || ( [ $? -eq 1 ] && true)
 
         echo $res
         res="${res//'%'/'%25'}"
