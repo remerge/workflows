@@ -82,7 +82,7 @@ jobs:
 
     - name: Add Nomad pack registry
       run: |
-        bin/nomad-pack registry add ${{ inputs.pack_name }} ${{ inputs.registry }}
+        bin/nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
     - name: Run Nomad Plan
       id: nomad_plan
@@ -95,7 +95,8 @@ jobs:
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
-        --var-file=${{ inputs.variables_file_name }}
+        --var-file=${{ inputs.variables_file_name }} \
+        --registry=remerge-pack
 
 
     - name: PR Comment
