@@ -82,7 +82,7 @@ jobs:
 
     - name: Add Nomad pack registry
       run: |
-        nomad-pack registry add ${{ inputs.pack_name }} ${{ inputs.registry }}
+        bin/nomad-pack registry add ${{ inputs.pack_name }} ${{ inputs.registry }}
 
     - name: Run Nomad Plan
       id: nomad_plan
