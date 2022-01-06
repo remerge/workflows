@@ -1,0 +1,111 @@
+name: Deploy to Nomad Cluster using nomad-pack
+on:
+  workflow_call:
+    inputs:
+      cluster_details:
+        required: true
+        type: string
+        description: |
+          An json string with details of Nomad clusters to deploy to.
+          Available keys and descriptions found below:
+          [
+            {
+              "cluster": Name of the cluster,
+              "environment": Application environment to deploy,
+              "api_url": Nomad cluster API address,
+              "api_key_name": Keyname of the cluster API key set in the secrets
+            }
+          ]
+          Example:
+            [
+              {
+                "cluster": "gce",
+                "environment": "production",
+                "api_url": "http://nomad.nomad-test.remerge.io/",
+                "api_key_name": "gce_nomad_token"
+              },
+              {
+                "cluster": "dw1",
+                "environment": "production",
+                "api_url": "http://nomad.mon.rmge.net/",
+                "api_key_name": "dw1_nomad_token"
+              }
+            ]
+      image_name:
+        required: true
+        type: string
+        description: Docker image to deploy to cluster
+      registry:
+        required: true
+        type: string
+        description: Nomad pack registry to download.
+      name:
+        required: true
+        type: string
+        description: Unique identifier of this deployed instance of the specified pack
+      pack_name:
+        required: true
+        type: string
+        description: Nomad pack in registry to use.
+      variables_file_name:
+        required: true
+        type: string
+        description: Relative path to nomad_pack variable.
+    secrets:
+      gce_nomad_token:
+        required: false
+      dw1_nomad_token:
+        required: false
+env:
+  NOMAD_PACK_BINARY: https://releases.hashicorp.com/nomad-pack/0.0.1-techpreview1/nomad-pack_0.0.1-techpreview1_linux_386.zip
+jobs:
+  nomad:
+    runs-on: [self-hosted, linux]
+    strategy:
+      matrix:
+        cluster_detail: ${{fromJson(inputs.cluster_details)}}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.image_name }}
+        tags: |
+          type=sha
+    - name: Install Nomad-Pack
+      run: |
+        curl -o nomad-pack.zip $NOMAD_PACK_BINARY && unzip nomad-pack.zip -d bin
+
+    - name: Run Nomad Plan
+      id: nomad_plan
+      env:
+        NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
+        NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
+      run: |
+        res=$(bin/nomad-pack plan --var='task_image=${{ inputs.image_name }}' \
+        --name=${{ inputs.pack_name }} --var-file=${{ inputs.variables_file_name }}) \
+        || ( [ $? -eq 1 ] && true)
+
+        echo $res
+        res="${res//'%'/'%25'}"
+        res="${res//$'\n'/'%0A'}"
+        res="${res//$'\r'/'%0D'}"
+
+        echo "::set-output name=stdout::$res"
+
+    - name: PR Comment
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: actions/github-script@v2
+      with:
+        github-token: ${{secrets.github_token}}
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Nomad Plan for ${{ matrix.cluster_detail.cluster }} \n ${{ steps.nomad_plan.outputs.stdout }}`
+          })
