@@ -1,4 +1,4 @@
-name: Deploy to Nomad Cluster
+name: Plan a deployment to Nomad Cluster
 on:
   workflow_call:
     inputs:

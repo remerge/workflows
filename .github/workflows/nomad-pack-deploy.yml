@@ -1,4 +1,4 @@
-name: Plan a deploy to Nomad Cluster using nomad-pack
+name: Deploy to Nomad Cluster using nomad-pack
 on:
   workflow_call:
     inputs:
@@ -84,37 +84,16 @@ jobs:
       run: |
         bin/nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
-    - name: Run Nomad Plan
-      id: nomad_plan
+    - name: Deploy to Nomad
+      if: ${{ github.event_name != 'pull_request' }}
       env:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
       run: |
-        res=$(bin/nomad-pack plan ${{ inputs.pack_name }} \
+        bin/nomad-pack run ${{ inputs.pack_name }} \
         --var='task_image=${{ steps.meta.outputs.tags }}' \
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
         --var-file=${{ inputs.variables_file_name }} \
-        --registry=remerge-pack) || ( [ $? -eq 1 ] && true)
-
-        echo $res
-        res="${res//'%'/'%25'}"
-        res="${res//$'\n'/'%0A'}"
-        res="${res//$'\r'/'%0D'}"
-
-        echo "::set-output name=stdout::$res"
-
-
-    - name: PR Comment
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: actions/github-script@v2
-      with:
-        github-token: ${{secrets.github_token}}
-        script: |
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `Nomad Plan for ${{ matrix.cluster_detail.cluster }} \n ${{ steps.nomad_plan.outputs.stdout }}`
-          })
+        --registry=remerge-pack
