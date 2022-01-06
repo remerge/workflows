@@ -90,8 +90,7 @@ jobs:
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.cluster_detail.environment }}' \
-        --name=${{ inputs.name }} --var-file=${{ inputs.variables_file_name }}) \
-        || ( [ $? -eq 1 ] && true)
+        --name=${{ inputs.name }} --var-file=${{ inputs.variables_file_name }}) || ( [ $? -eq 1 ] && true)
 
         echo $res
         res="${res//'%'/'%25'}"
