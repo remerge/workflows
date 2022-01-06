@@ -90,13 +90,20 @@ jobs:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
       run: |
-        bin/nomad-pack plan ${{ inputs.pack_name }} \
+        res=$(bin/nomad-pack plan ${{ inputs.pack_name }} \
         --var='task_image=${{ inputs.image_name }}' \
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
         --var-file=${{ inputs.variables_file_name }} \
-        --registry=remerge-pack
+        --registry=remerge-pack) ) || ( [ $? -eq 1 ] && true)
+
+        echo $res
+        res="${res//'%'/'%25'}"
+        res="${res//$'\n'/'%0A'}"
+        res="${res//$'\r'/'%0D'}"
+
+        echo "::set-output name=stdout::$res"
 
 
     - name: PR Comment
