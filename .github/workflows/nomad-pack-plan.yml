@@ -96,7 +96,7 @@ jobs:
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
         --var-file=${{ inputs.variables_file_name }} \
-        --registry=remerge-pack) ) || ( [ $? -eq 1 ] && true)
+        --registry=remerge-pack) || ( [ $? -eq 1 ] && true)
 
         echo $res
         res="${res//'%'/'%25'}"
