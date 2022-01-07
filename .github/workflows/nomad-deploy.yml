@@ -5,6 +5,32 @@ on:
       cluster_details:
         required: true
         type: string
+        description: |
+          An json string with details of Nomad clusters to deploy to.
+          Available keys and descriptions found below:
+          [
+            {
+              "cluster": Name of the cluster,
+              "environment": Application environment to deploy,
+              "api_url": Nomad cluster API address,
+              "api_key_name": Keyname of the cluster API key set in the secrets
+            }
+          ]
+          Example:
+            [
+              {
+                "cluster": "gce",
+                "environment": "production",
+                "api_url": "http://nomad.nomad-test.remerge.io/",
+                "api_key_name": "gce_nomad_token"
+              },
+              {
+                "cluster": "dw1",
+                "environment": "production",
+                "api_url": "http://nomad.mon.rmge.net/",
+                "api_key_name": "dw1_nomad_token"
+              }
+            ]
       image_name:
         required: true
         type: string
