@@ -85,7 +85,7 @@ jobs:
         bin/nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
     - name: Deploy to Nomad
-      # if: ${{ github.event_name != 'pull_request' }}
+      if: ${{ github.event_name != 'pull_request' }}
       env:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
