@@ -58,11 +58,6 @@ jobs:
         images: ${{ inputs.image_name }}
         tags: |
           type=sha
-    - name: Install Nomad
-      run: |
-        curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-        sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-        sudo apt-get update && sudo apt-get install nomad
 
     - name: Deploy to Nomad
       if: ${{ github.event_name != 'pull_request' }}

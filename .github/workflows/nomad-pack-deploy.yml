@@ -56,8 +56,6 @@ on:
         required: false
       dw1_nomad_token:
         required: false
-env:
-  NOMAD_PACK_BINARY: https://releases.hashicorp.com/nomad-pack/0.0.1-techpreview1/nomad-pack_0.0.1-techpreview1_linux_386.zip
 jobs:
   nomad:
     runs-on: [self-hosted, linux]
@@ -76,9 +74,6 @@ jobs:
         images: ${{ inputs.image_name }}
         tags: |
           type=sha
-    - name: Install Nomad-Pack
-      run: |
-        curl -o nomad-pack.zip $NOMAD_PACK_BINARY && unzip nomad-pack.zip -d bin
 
     - name: Add Nomad pack registry
       run: |
