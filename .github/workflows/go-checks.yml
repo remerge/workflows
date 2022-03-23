@@ -10,6 +10,10 @@ on:
         type: string
         required: false
         default: "1.17"
+      goprivate:
+        type: string
+        required: false
+        default: "github.com/remerge"
     secrets:
       gh_auth_token:
         required: true
@@ -18,7 +22,7 @@ jobs:
   go-test:
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: github.com/remerge
+      GOPRIVATE: ${{ inputs.goprivate }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
