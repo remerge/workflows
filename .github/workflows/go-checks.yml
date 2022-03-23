@@ -1,4 +1,7 @@
-name: Run Go test
+# Runs common checks for Go package: lint (fmt, modules, static, shadowing),
+# tests and race.
+
+name: Go checks
 
 on:
   workflow_call:
@@ -6,16 +9,18 @@ on:
       golang_version:
         type: string
         required: false
-        default: "1.15"
+        default: "1.17"
     secrets:
       gh_auth_token:
         required: true
+
 jobs:
   go-test:
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: github.com/remerge
     steps:
     - uses: actions/checkout@v2
-
     - uses: actions/cache@v2
       with:
         path: |
@@ -24,21 +29,15 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      env:
-        GOPRIVATE: github.com/remerge
+    - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version }}
-
     - name: Update git config
       env:
         GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
       run: |
         git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
 
-    - name: Test
-      env:
-        GOPRIVATE: github.com/remerge
-      run: make lint test-nocache
+    - run: make lint
+    - run: make test-nocache
+    - run: make race-nocache
