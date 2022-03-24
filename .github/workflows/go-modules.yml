@@ -1,0 +1,47 @@
+# Check that Go modules dependencies is up-to-date.
+# This workflow is optional and can be invoked once per week on master branch.
+
+name: Go Modules
+
+on:
+  workflow_call:
+    inputs:
+      golang_version:
+        type: string
+        required: false
+        default: "1.17"
+      goprivate:
+        type: string
+        required: false
+        default: "github.com/remerge"
+    secrets:
+      gh_auth_token:
+        required: true
+
+jobs:
+  go-modules:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: ${{ inputs.goprivate }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ inputs.golang_version }}
+    - name: Update git config
+      env:
+        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
+      run: |
+        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+
+    - run: go get -u
+    - run: go mod tidy -compat=${{ inputs.golang_version }}
+    - run: git diff --exit-code -G"${GOPRIVATE}" go.mod
