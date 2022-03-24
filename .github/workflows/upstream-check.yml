@@ -1,0 +1,43 @@
+# Check that specific directory is up-to-date with specific Git repo.
+# This workflow is optional and can be invoked once per week on master branch.
+
+name: Git Tree Upstream Sanity
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        type: string
+        required: true
+      repo:
+        type: string
+        required: true
+      branch:
+        type: string
+        required: false
+        default: "master"
+      upstream_name:
+        type: string
+        required: false
+        default: "dep"
+    secrets:
+      gh_auth_token:
+        required: true
+
+jobs:
+  upstream:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - name: Update git config
+      env:
+        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
+      run: |
+        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+
+    - run: git remote add ${{ inputs.upstream_name }} https://${{ inputs.repo }}.git
+    - run: git fetch -a -p ${{ inputs.upstream_name }}
+    - run: git diff --exit-code --name-only --relative HEAD:${{ inputs.directory }}/ ${{ inputs.upstream_name }}/${{ inputs.branch }}:./
+
