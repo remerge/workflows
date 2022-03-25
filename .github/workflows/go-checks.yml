@@ -14,6 +14,10 @@ on:
         type: string
         required: false
         default: "github.com/remerge"
+      no-race:
+        type: boolean
+        required: false
+        default: false
     secrets:
       gh_auth_token:
         required: true
@@ -45,3 +49,4 @@ jobs:
     - run: make lint
     - run: make test-nocache
     - run: make race-nocache
+      if: '!inputs.no-race'
