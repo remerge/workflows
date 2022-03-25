@@ -1,4 +1,7 @@
-name: Run Go test
+# Check that Go modules dependencies is up-to-date.
+# This workflow is optional and can be invoked once per week on master branch.
+
+name: Go Modules
 
 on:
   workflow_call:
@@ -6,16 +9,22 @@ on:
       golang_version:
         type: string
         required: false
-        default: "1.15"
+        default: "1.17"
+      goprivate:
+        type: string
+        required: false
+        default: "github.com/remerge"
     secrets:
       gh_auth_token:
         required: true
+
 jobs:
-  go-test:
+  go-modules:
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: ${{ inputs.goprivate }}
     steps:
     - uses: actions/checkout@v2
-
     - uses: actions/cache@v2
       with:
         path: |
@@ -24,21 +33,15 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      env:
-        GOPRIVATE: github.com/remerge
+    - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version }}
-
     - name: Update git config
       env:
         GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
       run: |
         git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
 
-    - name: Test
-      env:
-        GOPRIVATE: github.com/remerge
-      run: make lint test-nocache
+    - run: go get -u
+    - run: go mod tidy -compat=${{ inputs.golang_version }}
+    - run: git diff --exit-code -G"${GOPRIVATE}" go.mod
