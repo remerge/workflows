@@ -1,0 +1,67 @@
+name: Go app build
+
+on:
+  workflow_call:
+    inputs:
+      golang_version:
+        type: string
+        required: false
+        default: "1.17"
+      goprivate:
+        type: string
+        required: false
+        default: "github.com/remerge"
+      branches:
+        type: string
+        required: false
+        default: 'master production main'
+    outputs:
+      artifact:
+        description: 'Binary output artifact'
+        value: '${{ jobs.go-app.outputs.artifact }}'
+    secrets:
+      gh_auth_token:
+        required: true
+
+jobs:
+  go-app:
+    if: ${{ contains(inputs.branches, github.head_ref) }}
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: ${{ inputs.goprivate }}
+      REPONAME: ${{ github.event.repository.name }}
+    outputs:
+      artifact: '${{ github.event.repository.name }}.linux.amd64'
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ inputs.golang_version }}
+    - name: Update git config
+      env:
+        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
+      run: |
+        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+
+    - run: make dist
+      env:
+        # TODO (spin): remove after merge https://github.com/remerge/go-makefile/pull/44
+        # It's temporary workaround to provide proper build because in CircleCI
+        # makefile upstream lint is not optional.
+        CIRCLE_SHA1: ${{ github.sha }}
+        CIRCLE_PROJECT_REPONAME: ${{ env.REPONAME }}
+        CIRCLE_BUILD_NUM: ${{ github.run_id }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.REPONAME }}.linux.amd64
+        path: .build/${{ env.REPONAME }}.linux.amd64
+
