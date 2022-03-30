@@ -1,5 +1,5 @@
 name: Lint github action
-on: [push, pull_request]
+on: [push]
 
 jobs:
   lint_and_test:
