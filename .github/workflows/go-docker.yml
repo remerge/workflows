@@ -14,8 +14,10 @@ on:
     secrets:
       gh_auth_token:
         required: true
+        description: "Github auth token i.e username:gh_token"
       gh_token:
         required: true
+        description: "Github token"
 jobs:
   docker:
     runs-on: ubuntu-latest

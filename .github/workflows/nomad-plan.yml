@@ -38,8 +38,10 @@ on:
     secrets:
       gce_nomad_token:
         required: false
+        description: "Nomad token for accessing Nomad GCE cluster"
       dw1_nomad_token:
         required: false
+        description: "Nomad token for accessing Nomad DW1 cluster"
 
 jobs:
   nomad:

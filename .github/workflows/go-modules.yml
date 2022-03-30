@@ -19,6 +19,7 @@ on:
     secrets:
       gh_auth_token:
         required: true
+        description: "Github auth token i.e username:gh_token"
 
 jobs:
   go-modules:
