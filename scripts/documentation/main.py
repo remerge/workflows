@@ -73,7 +73,7 @@ $secrets
 
     # if workflow_call is not set then it is not a reusable workflow
     # and should be skipped
-    if data.get("on").get("workflow_call") == None:
+    if "workflow_call" not in data.get("on"):
         return None,None
 
     inputs = data.get("on").get("workflow_call").get("inputs")
