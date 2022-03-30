@@ -18,7 +18,7 @@ jobs:
       - uses: remerge/Github-action-confluence-sync@develop
         with:
           from: './doc.md'
-          to: '2299723861'
+          to: '2306670708'
           cloud: remerge
           user: ${{secrets.confluence_user_email}}
           token: ${{secrets.confluence_token}}
