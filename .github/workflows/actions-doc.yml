@@ -1,26 +1,16 @@
-name: Lint github action + Update doc
+name: Update github actions doc
 on:
   push:
     branches:
-      - action
+      - main
 
 jobs:
   lint_and_test:
     runs-on: ubuntu-latest
-    name: lint and test
+    name: generate reusable workflow docs in confluence
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
-      - name: Download actionlint
-        id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-        shell: bash
-      - name: Check workflow files
-        run: ${{ steps.get_actionlint.outputs.executable }} -color
-        shell: bash
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
       - run: pip install -r scripts/documentation/requirements.txt
         name: install dependencies
       - name: generate doc
