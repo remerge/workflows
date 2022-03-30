@@ -93,7 +93,7 @@ jobs:
         --var-file=${{ inputs.variables_file_name }} \
         --registry=remerge-pack) || ( [ $? -eq 1 ] && true)
 
-        echo $res
+        echo "$res"
         res="${res//'%'/'%25'}"
         res="${res//$'\n'/'%0A'}"
         res="${res//$'\r'/'%0D'}"

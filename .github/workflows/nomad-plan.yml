@@ -70,7 +70,7 @@ jobs:
       run: |
         res=$(nomad plan -token="$NOMAD_TOKEN" -address="$NOMAD_API" nomad.hcl) || ( [ $? -eq 1 ] && true)
 
-        echo $res
+        echo "$res"
         res="${res//'%'/'%25'}"
         res="${res//$'\n'/'%0A'}"
         res="${res//$'\r'/'%0D'}"
