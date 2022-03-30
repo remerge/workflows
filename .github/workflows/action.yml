@@ -1,4 +1,4 @@
-name: Lint + Update doc
+name: Lint github action + Update doc
 on:
   push:
     branches:
@@ -18,3 +18,10 @@ jobs:
       - name: Check workflow files
         run: ${{ steps.get_actionlint.outputs.executable }} -color
         shell: bash
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - run: pip install -r scripts/documentation/requirements.txt
+        name: install dependencies
+      - name: generate doc
+        run: python ./scripts/documentation/main.py -p .github/workflows/
