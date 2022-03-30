@@ -34,6 +34,7 @@ on:
       image_name:
         required: true
         type: string
+        description: "Docker image to deploy"
     secrets:
       gce_nomad_token:
         required: false

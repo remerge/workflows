@@ -9,17 +9,21 @@ on:
       directory:
         type: string
         required: true
+        description: "target directory"
       repo:
         type: string
         required: true
+        description: "target github repository"
       branch:
         type: string
         required: false
         default: "master"
+        description: "target github branch"
       upstream_name:
         type: string
         required: false
         default: "dep"
+        description: "target upstream"
     secrets:
       gh_auth_token:
         required: true
@@ -40,4 +44,3 @@ jobs:
     - run: git remote add ${{ inputs.upstream_name }} https://${{ inputs.repo }}.git
     - run: git fetch -a -p ${{ inputs.upstream_name }}
     - run: git diff --exit-code --name-only --relative HEAD:${{ inputs.directory }}/ ${{ inputs.upstream_name }}/${{ inputs.branch }}:./
-

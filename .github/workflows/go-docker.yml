@@ -6,9 +6,11 @@ on:
       registry:
         required: true
         type: string
+        description: "Docker container registry"
       image_name:
         required: true
         type: string
+        description: "Docker image to deploy"
     secrets:
       gh_auth_token:
         required: true
