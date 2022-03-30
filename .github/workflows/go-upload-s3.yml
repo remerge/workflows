@@ -1,0 +1,43 @@
+name: Go upload to S3
+
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        type: string
+        required: false
+        default: '${{ github.event.repository.name }}.linux.amd64'
+      aws_bucket:
+        type: string
+        required: false
+        default: 'remerge-artifacts-v2'
+      directory:
+        type: string
+        required: false
+        default: ${{ github.repository }}
+    secrets:
+      aws_key_id:
+        required: true
+      aws_key_secret:
+        required: true
+
+jobs:
+  go-upload-s3:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "${{ inputs.artifact }}"
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.artifact }}
+
+    - uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --acl private --follow-symlinks --delete
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
+        AWS_S3_BUCKET: ${{ inputs.aws_bucket }}
+        SOURCE_DIR: './'
+        DEST_DIR: '${{ inputs.directory }}/${{ github.head_ref }}'
+
+
