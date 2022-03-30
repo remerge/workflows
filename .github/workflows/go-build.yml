@@ -4,14 +4,17 @@ on:
   workflow_call:
     inputs:
       golang_version:
+        description: "Go version"
         type: string
         required: false
         default: "1.17"
       goprivate:
+        description: "Go private packages prefix"
         type: string
         required: false
         default: "github.com/remerge"
       branches:
+        description: "Git branches eligible to build"
         type: string
         required: false
         default: 'master production main'
@@ -21,6 +24,7 @@ on:
         value: '${{ jobs.go-app.outputs.artifact }}'
     secrets:
       gh_auth_token:
+        description: "GitHub token"
         required: true
 
 jobs:

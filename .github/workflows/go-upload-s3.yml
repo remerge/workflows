@@ -4,21 +4,26 @@ on:
   workflow_call:
     inputs:
       artifact:
+        description: "Artifact file name"
         type: string
         required: false
         default: '${{ github.event.repository.name }}.linux.amd64'
       aws_bucket:
+        description: "AWS bucket"
         type: string
         required: false
         default: 'remerge-artifacts-v2'
       directory:
+        description: "Directory in AWS bucket"
         type: string
         required: false
         default: ${{ github.repository }}
     secrets:
       aws_key_id:
+        description: "AWS Key ID"
         required: true
       aws_key_secret:
+        description: "AWS Key Secret"
         required: true
 
 jobs:
