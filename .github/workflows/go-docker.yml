@@ -6,14 +6,18 @@ on:
       registry:
         required: true
         type: string
+        description: "Docker container registry"
       image_name:
         required: true
         type: string
+        description: "Docker image to deploy"
     secrets:
       gh_auth_token:
         required: true
+        description: "Github auth token i.e username:gh_token"
       gh_token:
         required: true
+        description: "Github token"
 jobs:
   docker:
     runs-on: ubuntu-latest

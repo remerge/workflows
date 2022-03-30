@@ -1,0 +1,24 @@
+name: Update github actions doc
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+    name: generate reusable workflow docs in confluence
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+      - run: pip install -r scripts/documentation/requirements.txt
+        name: install dependencies
+      - name: generate doc
+        run: python ./scripts/documentation/main.py -p .github/workflows/ > ./doc.md
+      - uses: remerge/Github-action-confluence-sync@develop
+        with:
+          from: './doc.md'
+          to: '2299723861'
+          cloud: remerge
+          user: ${{secrets.confluence_user_email}}
+          token: ${{secrets.confluence_token}}

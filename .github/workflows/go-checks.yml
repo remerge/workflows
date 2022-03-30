@@ -10,17 +10,21 @@ on:
         type: string
         required: false
         default: "1.17"
+        description: "Set Golang version to use"
       goprivate:
         type: string
         required: false
         default: "github.com/remerge"
+        description: "Set GOPRIVATE"
       no-race:
         type: boolean
         required: false
         default: false
+        description: "Run race detector"
     secrets:
       gh_auth_token:
         required: true
+        description: "Github auth token i.e username:gh_token"
 
 jobs:
   go-test:

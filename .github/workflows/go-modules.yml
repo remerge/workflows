@@ -10,13 +10,16 @@ on:
         type: string
         required: false
         default: "1.17"
+        description: "Golang version to use"
       goprivate:
         type: string
         required: false
         default: "github.com/remerge"
+        description: "Set GOPRIVATE"
     secrets:
       gh_auth_token:
         required: true
+        description: "Github auth token i.e username:gh_token"
 
 jobs:
   go-modules:
