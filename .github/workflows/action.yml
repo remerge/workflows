@@ -25,10 +25,10 @@ jobs:
         name: install dependencies
       - name: generate doc
         run: python ./scripts/documentation/main.py -p .github/workflows/ > ./doc.md
-      - uses: confluence-markdown-sync
+      - uses: remerge/confluence-markdown-sync
         with:
           from: './doc.md'
           to: '2299723861'
           cloud: remerge
-          user: ${{secrets.user_email}}
+          user: ${{secrets.confluence_user_email}}
           token: ${{secrets.confluence_token}}
