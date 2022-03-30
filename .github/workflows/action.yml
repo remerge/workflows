@@ -24,4 +24,11 @@ jobs:
       - run: pip install -r scripts/documentation/requirements.txt
         name: install dependencies
       - name: generate doc
-        run: python ./scripts/documentation/main.py -p .github/workflows/
+        run: python ./scripts/documentation/main.py -p .github/workflows/ > ./doc.md
+      - uses: confluence-markdown-sync
+        with:
+          from: './doc.md'
+          to: '2299723861'
+          cloud: remerge
+          user: ${{secrets.user_email}}
+          token: ${{secrets.confluence_token}}
