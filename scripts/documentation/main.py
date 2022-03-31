@@ -10,7 +10,7 @@ from yaml.resolver import *
 from string import Template
 from typing import Tuple
 from pathlib import Path
-
+from names_generator import generate_name
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--path", "-p", help="path to workflows", required=True)
@@ -42,6 +42,8 @@ def get_value(value: str,default: str) -> str :
 
 def generate_data(file_path: str) -> Tuple[str, str]:
     file = open(file_path, 'r')
+    file_name = Path(file_path).name
+
     description = ""
     while True:
         # Get next line from file
@@ -57,11 +59,15 @@ def generate_data(file_path: str) -> Tuple[str, str]:
     with open(file_path) as f:
         data = yaml.load(f,MySafeLoader)
 
+    name = get_value(data.get("name"),file_name)
+
     template = Template(
         """
 ## $name
 ---
 $description
+### Snippet
+$snippet
 ### Inputs
 $inputs
 ### Secrets
@@ -69,7 +75,21 @@ $secrets
         """
     )
 
-    name = get_value(data.get("name"),Path(file_path).name)
+    snippet_template = Template(
+        """
+```
+name: $project_name
+on:
+  push:
+    branches: [ '*' ]
+jobs:
+  test:
+    uses: remerge/workflows/.github/workflows/$file_name@main
+    $inputs
+    $secrets
+```"""
+    )
+
 
     # if workflow_call is not set then it is not a reusable workflow
     # and should be skipped
@@ -78,9 +98,18 @@ $secrets
 
     inputs = data.get("on").get("workflow_call").get("inputs")
     input_str = ""
+    inputs_sample = ""
     if inputs != None:
+        inputs_sample += "with:\r"
         for input in inputs:
             input_data = inputs.get(input)
+            input_type = input_data.get("type")
+            is_required = input_data.get("required")
+            inputs_sample += "\t\t{}: {} value (required:{})\r".format(
+                input,
+                input_type,
+                is_required
+            )
             input_str += """
 * **{0}**
     * **Description:** {1}
@@ -90,16 +119,20 @@ $secrets
             """.format(
                 get_value(input,file_path),
                 get_value(input_data.get("description"),"N/A"),
-                get_value(input_data.get("type"),"N/A"),
-                get_value(input_data.get("required"),"N/A"),
+                input_type,
+                is_required,
                 get_value(input_data.get("default"),"N/A"),
             )
 
     secrets = data.get("on").get("workflow_call").get("secrets")
     secret_str = ""
+    secrets_sample = ""
     if secrets != None:
+        secrets_sample += "secrets:\r"
         for secret in secrets:
             secret_data = secrets.get(secret)
+            is_secret_required = secret_data.get("required")
+            secrets_sample += "\t\t{}: secret value (required:{})\r".format(secret,is_secret_required)
             secret_str += """
 * **{0}**
     * **Description:** {1}
@@ -107,12 +140,20 @@ $secrets
             """.format(
                 get_value(secret,"N/A"),
                 get_value(secret_data.get("description"),"N/A"),
-                get_value(secret_data.get("required"),"N/A"),
+                is_secret_required,
             )
-
+    snippet = snippet_template.substitute(
+        {
+            'inputs': inputs_sample,
+            'secrets': secrets_sample,
+            'file_name': file_name,
+            'project_name': generate_name(style='capital'),
+        }
+    )
     return name , template.substitute(
         {
             'name': name,
+            'snippet': snippet,
             'description': description,
             'inputs': input_str,
             'secrets': secret_str,
