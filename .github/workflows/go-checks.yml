@@ -28,6 +28,7 @@ on:
 
 jobs:
   go-test:
+    name: "Go lint and test"
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
@@ -52,5 +53,30 @@ jobs:
 
     - run: make lint
     - run: make test-nocache
+
+  go-race:
+    name: 'Go test with race'
+    if: '!inputs.no-race'
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: ${{ inputs.goprivate }}
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ inputs.golang_version }}
+    - name: Update git config
+      env:
+        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
+      run: |
+        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+
     - run: make race-nocache
-      if: '!inputs.no-race'
