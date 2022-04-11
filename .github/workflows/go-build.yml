@@ -29,7 +29,7 @@ on:
 
 jobs:
   go-app:
-    if: ${{ contains(inputs.branches, github.head_ref) }}
+    if: ${{ contains(inputs.branches, github.head_ref || github.ref_name) }}
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
