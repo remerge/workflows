@@ -17,7 +17,7 @@ on:
         description: "Directory in AWS bucket"
         type: string
         required: false
-        default: ${{ github.repository }}
+        default: '${{ github.repository }}/${{ github.head_ref || github.ref_name }}'
     secrets:
       aws_key_id:
         description: "AWS Key ID"
@@ -30,11 +30,9 @@ jobs:
   go-upload-s3:
     runs-on: ubuntu-latest
     steps:
-    - run: echo "${{ inputs.artifact }}"
     - uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.artifact }}
-
     - uses: jakejarvis/s3-sync-action@master
       with:
         args: --acl private --follow-symlinks --delete
@@ -43,6 +41,6 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
         AWS_S3_BUCKET: ${{ inputs.aws_bucket }}
         SOURCE_DIR: './'
-        DEST_DIR: '${{ inputs.directory }}/${{ github.head_ref }}'
+        DEST_DIR: ${{ inputs.directory }}
 
 
