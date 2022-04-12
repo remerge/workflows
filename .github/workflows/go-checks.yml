@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         description: "Run race detector"
+      lint-target:
+        type: string
+        required: false
+        default: 'lint'
+        description: "Lint Make target"
     secrets:
       gh_auth_token:
         required: true
@@ -51,7 +56,7 @@ jobs:
       run: |
         git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
 
-    - run: make lint
+    - run: make ${{ inputs.lint-target }}
     - run: make test-nocache
 
   go-race:
