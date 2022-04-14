@@ -21,6 +21,21 @@ on:
         required: false
         default: false
         description: "Run race detector"
+      compose-file:
+        type: string
+        required: false
+        default: docker-compose.yml
+        description: "Docker-compose file to detect"
+      compose-wait:
+        type: number
+        required: false
+        default: 1
+        description: "Seconds to wait after docker-compose initialised"
+      no-compose:
+        type: boolean
+        required: false
+        default: false
+        description: "Do not run docker-compose even compose file is present"
     secrets:
       gh_auth_token:
         required: true
@@ -32,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
+
     steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
@@ -52,7 +68,13 @@ jobs:
         git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
 
     - run: make lint
+    - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
+      if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
     - run: make test-nocache
+    - run: 'docker-compose -f "${{ inputs.compose-file }}" down'
+      if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
+
+
 
   go-race:
     name: 'Go test with race'
@@ -79,4 +101,8 @@ jobs:
       run: |
         git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
 
+    - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
+      if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
     - run: make race-nocache
+    - run: 'docker-compose -f "${{ inputs.compose-file }}" down'
+      if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
