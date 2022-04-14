@@ -48,8 +48,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - run: |
-        echo "GO_VERSION=$(cat go.mod | grep '^go ' | awk '{print $2}')" >> $GITHUB_ENV
+    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}') >> $GITHUB_ENV"
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version || env.GO_VERSION }}
