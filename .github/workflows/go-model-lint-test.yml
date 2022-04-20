@@ -13,13 +13,17 @@ on:
         type: string
         required: false
         default: "github.com/remerge"
-      service_account_json:
+    secrets:
+      ssh_key:
         description: |
-          Google service account JSON to use while testing. By default, fake credentials will be used.
-          Only provide it, if your tests are to be run against a real bucket.
-        type: string
-        required: false
-        default: ""
+          SSH key to use to build and test the model. The user of the key must have access to our other private 
+          repositories.
+        required: true
+      fake_google_service_account_json:
+        description: |
+          Google service account JSON to use while testing. It should be fake credentials, unless your tests are to 
+          be run against a real bucket.
+        required: true
 
 jobs:
   go-model-lint-test:
@@ -27,7 +31,7 @@ jobs:
     name: Go Model Lint & Test
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
-      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ inputs.service_account_json || secrets.FAKE_GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v2
@@ -47,7 +51,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: |
-            ${{ secrets.DEPLOY_USER_SSH_KEY }}
+            ${{ secrets.ssh_key }}
       - name: Update Git config
         run: |
           git config --global url."git@github.com:".insteadOf "https://github.com/"

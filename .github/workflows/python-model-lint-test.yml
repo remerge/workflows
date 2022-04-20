@@ -15,13 +15,32 @@ on:
         type: string
         required: false
         default: ""
+    secrets:
+      ssh_key:
+        description: |
+          SSH key to use to build and test the model. The user of the key must have access to our other private 
+          repositories.
+        required: true
+      fake_google_service_account_json:
+        description: |
+          Google service account JSON to use while testing. It should be fake credentials, unless your tests are to 
+          be run against a real bucket.
+        required: true
+      pypi_username:
+        description: |
+          Username to use to log in into our private PyPi server.
+        required: true
+      pypi_password:
+        description: |
+          Password to use to log in into our private PyPi server.
+        required: true
 
 jobs:
   python-model-lint-and-test:
     runs-on: ubuntu-latest
     name: Python Model Lint & Test
     env:
-      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ inputs.service_account_json || secrets.FAKE_GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -36,7 +55,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: |
-            ${{ secrets.DEPLOY_USER_SSH_KEY }}
+            ${{ secrets.ssh_key }}
       - name: Configure pip to access our private PyPi repo
         run: |
           sudo /bin/bash -c "echo $'[global]\n\
@@ -44,12 +63,12 @@ jobs:
                          pypi.org\n\
           \n\
           index-url = https://pypi.org/simple\n\
-          extra-index-url = https://${{ secrets.PYPI_USERNAME }}:${{ secrets.PYPI_PASSWORD }}@pypi.remerge.io/simple'\
+          extra-index-url = https://${{ secrets.pypi_username }}:${{ secrets.pypi_password }}@pypi.remerge.io/simple'\
           > /etc/pip.conf"
       - name: Configure Poetry to access our private PyPi repo
         run: |
           poetry config repositories.remerge https://pypi.remerge.io
-          poetry config http-basic.remerge '${{ secrets.PYPI_USERNAME }}' '${{ secrets.PYPI_PASSWORD }}'
+          poetry config http-basic.remerge '${{ secrets.pypi_username }}' '${{ secrets.pypi_password }}'
       - run: poetry install
 
       - name: Lint
