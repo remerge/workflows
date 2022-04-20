@@ -8,13 +8,6 @@ on:
         type: string
         required: false
         default: ""
-      service_account_json:
-        description: |
-          Google service account JSON to use while testing. By default, fake credentials will be used.
-          Only provide it, if your tests are to be run against a real bucket.
-        type: string
-        required: false
-        default: ""
     secrets:
       ssh_key:
         description: |
