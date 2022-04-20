@@ -1,4 +1,4 @@
-name: Lint and test Go-based model
+name: Go-based model lint and test
 
 on:
   workflow_call:
@@ -23,8 +23,8 @@ on:
 
 jobs:
   go-model-lint-test:
-    if: ${{ contains(inputs.branches, github.head_ref || github.ref_name) }}
     runs-on: ubuntu-latest
+    name: Go Model Lint & Test
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ inputs.service_account_json || secrets.FAKE_GOOGLE_SERVICE_ACCOUNT_JSON }}
