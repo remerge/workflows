@@ -1,0 +1,68 @@
+name: Model release DAG update
+
+on:
+  workflow_call:
+    inputs:
+      schedule_interval:
+        description: |
+          Schedule interval for the model release. For syntax, check https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#cron-presets
+        type: string
+        required: true
+      service_account_json:
+        description: |
+          Google service account JSON to use for scheduling. By default, MLEM service credentials will be used.
+        type: string
+        required: false
+        default: ""
+
+jobs:
+  model-update-production-dag:
+    if: github.event_name == 'push' && contains(github.ref, 'refs/tags/') # Can only be triggered on tags
+    runs-on: ubuntu-latest
+    name: Update model's production DAG
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ inputs.service_account_json || secrets.MLEM_GOOGLE_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get the tag name
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+      - name: Get tag branch name
+        run: echo "BRANCH_NAME=release_$TAG" >> $GITHUB_ENV
+      - name: Check upstream branch existence
+        run: bash -c 'if [[ -z "${{ env.BRANCH_NAME }}" ]]; then exit 1; fi'
+      - name: Set upstream branch
+        run: |
+          git ls-remote --exit-code --heads origin ${{ env.BRANCH_NAME }}
+          git fetch --all && git checkout ${{ env.BRANCH_NAME }} && git reset --hard origin/${{ env.BRANCH_NAME }}
+          git branch --set-upstream-to=origin/${{ env.BRANCH_NAME }} ${{ env.BRANCH_NAME }}
+      - name: Check if the branch is in sync with the default branch # https://stackoverflow.com/a/27940027/2615633
+        run: |
+          BRANCH_CHECK=$(git rev-list --left-right --count origin/${{ github.event.repository.default_branch }}...origin/${{ env.BRANCH_NAME }} | awk '{print $1,$2}') && [[ "$BRANCH_CHECK" == "0 0" ]]
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to GCR
+        uses: docker/login-action@v1
+        with:
+          registry: eu.gcr.io
+          username: _json_key
+          password: ${{ secrets.MLEM_GOOGLE_SERVICE_ACCOUNT_JSON }}
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.DEPLOY_USER_SSH_KEY }}
+      - name: Configure pip to access our private PyPi repo
+        run: |
+          sudo /bin/bash -c "echo $'[global]\n\
+          trusted-host = pypi.remerge.io\n\
+                         pypi.org\n\
+          \n\
+          index-url = https://pypi.org/simple\n\
+          extra-index-url = https://${{ secrets.PYPI_USERNAME }}:${{ secrets.PYPI_PASSWORD }}@pypi.remerge.io/simple'\
+          > /etc/pip.conf"
+      - name: Install MLEM
+        run: pipx install mlem
+      - name: Schedule the DAG # to be updated with the _actual_ schedule command, once it works
+        run: |
+          mlem -vvvv schedule --interval '${{ inputs.schedule_interval }}' --suffix "production.latest_release"
