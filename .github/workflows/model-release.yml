@@ -37,9 +37,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Get the tag name
-        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        run: echo "TAG=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_ENV"
       - name: Get tag branch name
-        run: echo "BRANCH_NAME=release_$TAG" >> $GITHUB_ENV
+        run: echo "BRANCH_NAME=release_$TAG" >> "$GITHUB_ENV"
       - name: Check upstream branch existence
         run: bash -c 'if [[ -z "${{ env.BRANCH_NAME }}" ]]; then exit 1; fi'
       - name: Set upstream branch
