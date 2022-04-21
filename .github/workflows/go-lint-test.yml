@@ -1,0 +1,63 @@
+name: Go-based application lint and test
+
+on:
+  workflow_call:
+    inputs:
+      golang_version:
+        description: "Override Go version in go.mod"
+        type: string
+        required: false
+        default: ""
+      goprivate:
+        description: "Go private packages prefix"
+        type: string
+        required: false
+        default: "github.com/remerge"
+    secrets:
+      ssh_key:
+        description: |
+          SSH key to use to build and test the model. The user of the key must have access to our other private 
+          repositories.
+        required: true
+      fake_google_service_account_json:
+        description: |
+          Google service account JSON to use while testing. It should be fake credentials, unless your tests are to 
+          be run against a real bucket.
+        required: true
+
+jobs:
+  go-model-lint-test:
+    runs-on: ubuntu-latest
+    name: Go Model Lint & Test
+    env:
+      GOPRIVATE: ${{ inputs.goprivate }}
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Extract Go version from go.mod
+        run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.ssh_key }}
+      - name: Update Git config
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+      - name: Lint
+        run: make lint
+      - name: Test
+        run: |
+          make test-nocache
