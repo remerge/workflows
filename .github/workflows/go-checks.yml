@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         description: "Run race detector"
+      no-lint-gen:
+        type: boolean
+        required: false
+        default: false
+        description: "disable go generate lint"
     secrets:
       gh_auth_token:
         required: true
@@ -46,6 +51,8 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+    - uses: actions/setup-ruby@v1
+      if: '!inputs.no-lint-gen'
     - name: Update git config
       env:
         GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
@@ -53,6 +60,8 @@ jobs:
         git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
 
     - run: make lint
+    - run: make gen && git diff --exit-code --name-only HEAD
+      if: '!inputs.no-lint-gen'
     - run: make test-nocache
 
   go-race:
