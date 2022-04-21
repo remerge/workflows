@@ -25,9 +25,9 @@ on:
         default: "dep"
         description: "target upstream"
     secrets:
-      gh_auth_token:
+      ssh_key:
+        description: "SSH key to use"
         required: true
-        description: "Github auth token i.e username:gh_token"
 
 jobs:
   upstream:
@@ -36,11 +36,10 @@ jobs:
     - uses: actions/checkout@v3
       with:
         persist-credentials: false
-    - name: Update git config
-      env:
-        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
-      run: |
-        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+    - uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: '${{ secrets.ssh_key }}'
+    - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
     - run: git remote add ${{ inputs.upstream_name }} https://${{ inputs.repo }}.git
     - run: git fetch -a -p ${{ inputs.upstream_name }}
