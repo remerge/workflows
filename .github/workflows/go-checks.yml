@@ -26,64 +26,84 @@ on:
         required: false
         default: 'lint'
         description: "Lint Make target"
+      no-lint-gen:
+        type: boolean
+        required: false
+        default: false
+        description: "Do not run go generate lint"
+      lint-gen-ruby-version:
+        type: string
+        required: false
+        default: ""
+        description: "Set ruby version to install for go generate"
+      compose-file:
+        type: string
+        required: false
+        default: docker-compose.yml
+        description: "Docker-compose file to detect"
+      compose-wait:
+        type: number
+        required: false
+        default: 1
+        description: "Seconds to wait after docker-compose initialised"
+      no-compose:
+        type: boolean
+        required: false
+        default: false
+        description: "Do not run docker-compose even compose file is present"
     secrets:
-      gh_auth_token:
+      ssh_key:
+        description: "SSH key to use"
         required: true
-        description: "Github auth token i.e username:gh_token"
+
+env:
+  GOPRIVATE: ${{ inputs.goprivate }}
 
 jobs:
   go-test:
-    name: "Go lint and test"
+    name: "lint_and_test"
     runs-on: ubuntu-latest
-    env:
-      GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
+    - uses: actions/checkout@v3
+    - name: go modules cache
+      uses: actions/cache@v3
       with:
         path: |
           ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          ~/go/pkg
+        key: ${{ runner.os }}-go-mod-${{ github.job }}-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-go-
+          ${{ runner.os }}-go-mod-${{ github.job }}-
+    - name: go tools cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ github.workspace }}/mkf/.tools
+        key: ${{ runner.os }}-go-tools-${{ github.job }}
+        restore-keys: |
+          ${{ runner.os }}-go-tools-${{ github.job }}
     - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - name: Update git config
-      env:
-        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
-      run: |
-        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
+    - uses: ruby/setup-ruby@v1
+      with:
+        bundler-cache: true
+        ruby-version: '${{ inputs.lint-gen-ruby-version }}'
+      if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' }}"
+
+    - uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: '${{ secrets.ssh_key }}'
+    - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
     - run: make ${{ inputs.lint-target }}
+    - run: make gen && git diff --exit-code --name-only HEAD
+      if: '!inputs.no-lint-gen'
+    - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
+      if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
     - run: make test-nocache
-
-  go-race:
-    name: 'Go test with race'
-    if: '!inputs.no-race'
-    runs-on: ubuntu-latest
-    env:
-      GOPRIVATE: ${{ inputs.goprivate }}
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-    - uses: actions/setup-go@v2
-      with:
-        go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - name: Update git config
-      env:
-        GH_AUTH_TOKEN: ${{ secrets.gh_auth_token }}
-      run: |
-        git config --global url."https://${GH_AUTH_TOKEN}@github.com/".insteadOf https://github.com/
-
     - run: make race-nocache
+      if: '!inputs.no-race'
+    - run: 'docker-compose -f "${{ inputs.compose-file }}" down'
+      if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
