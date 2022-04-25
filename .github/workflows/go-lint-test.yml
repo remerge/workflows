@@ -34,6 +34,8 @@ jobs:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
       - uses: actions/checkout@v3
+      - name: Extract Go version from go.mod
+        run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
       - name: Go modules cache
         uses: actions/cache@v3
         with:
@@ -48,11 +50,9 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/mkf/.tools
-          key: ${{ runner.os }}-go-tools-${{ github.job }}
+          key: ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
           restore-keys: |
-            ${{ runner.os }}-go-tools-${{ github.job }}
-      - name: Extract Go version from go.mod
-        run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+            ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}

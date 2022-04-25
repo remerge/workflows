@@ -65,6 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
     - name: go modules cache
       uses: actions/cache@v3
       with:
@@ -79,10 +80,9 @@ jobs:
       with:
         path: |
           ${{ github.workspace }}/mkf/.tools
-        key: ${{ runner.os }}-go-tools-${{ github.job }}
+        key: ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
         restore-keys: |
-          ${{ runner.os }}-go-tools-${{ github.job }}
-    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+          ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version || env.GO_VERSION }}
