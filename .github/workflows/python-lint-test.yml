@@ -49,6 +49,11 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.ssh_key }}
+
+      - name: Update Git config
+        run: |
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+
       - name: Configure pip to access our private PyPi repo
         run: |
           sudo /bin/bash -c "echo $'[global]\n\
@@ -62,6 +67,7 @@ jobs:
         run: |
           poetry config repositories.remerge https://pypi.remerge.io
           poetry config http-basic.remerge '${{ secrets.pypi_username }}' '${{ secrets.pypi_password }}'
+
       - run: poetry install
 
       - name: Lint
