@@ -25,6 +25,9 @@ on:
       service_account:
         required: true
         description: "GCP IAM service account for pushing docker image to GCR"
+      deploy_user_ssh_key:
+        required: true
+        description: "Private key for deploy user to access private repos"
 
 env:
   SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -39,7 +42,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: |
-            ${{ secrets.DEPLOY_USER_SSH_KEY }}
+            ${{ secrets.deploy_user_ssh_key }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -58,3 +61,4 @@ jobs:
           push: true
           tags: ${{ inputs.tags }}
           labels: ${{ inputs.labels }}
+          ssh: default
