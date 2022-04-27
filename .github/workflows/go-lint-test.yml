@@ -13,6 +13,9 @@ on:
         type: string
         required: false
         default: "github.com/remerge"
+      fetch_depth:
+        default: 1
+        description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
     secrets:
       ssh_key:
         description: |
@@ -34,6 +37,8 @@ jobs:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: ${{ inputs.fetch_depth }}
       - name: Extract Go version from go.mod
         run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
       - name: Go modules cache
