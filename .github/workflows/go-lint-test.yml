@@ -15,6 +15,7 @@ on:
         default: "github.com/remerge"
       fetch_depth:
         default: 1
+        type: string
         description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
     secrets:
       ssh_key:
