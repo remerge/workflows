@@ -23,6 +23,16 @@ on:
         type: string
         required: false
         default: '${{ github.repository }}/${{ github.head_ref || github.ref_name }}'
+      pypi_aws_bucket:
+        description: "AWS bucket for PyPi server"
+        type: string
+        required: false
+        default: 'remerge-pypi'
+      pypi_bucket_directory:
+        description: "Directory in AWS bucket for PyPi server"
+        type: string
+        required: false
+        default: '${{ github.repository }}'
     secrets:
       ssh_key:
         description: |
@@ -108,6 +118,17 @@ jobs:
           AWS_S3_BUCKET: ${{ inputs.aws_bucket }}
           SOURCE_DIR: './dist/'
           DEST_DIR: ${{ inputs.bucket_directory }}
+
+      - name: Upload the artifact to S3 for PyPi
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl private --follow-symlinks --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
+          AWS_S3_BUCKET: ${{ inputs.pypi_aws_bucket }}
+          SOURCE_DIR: './dist/'
+          DEST_DIR: ${{ inputs.pypi_bucket_directory }}
       - name: Trigger the PyPi server refresh
         run: |
           curl --fail https://${{ secrets.pypi_username }}:${{ secrets.pypi_password }}@pypi.remerge.io/_trigger_sync
