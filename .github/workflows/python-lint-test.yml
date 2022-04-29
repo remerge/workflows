@@ -1,4 +1,4 @@
-name: Python-based model lint and test
+name: Python-based application lint and test
 
 on:
   workflow_call:
@@ -31,7 +31,6 @@ on:
 jobs:
   python-model-lint-and-test:
     runs-on: ubuntu-latest
-    name: Python Model Lint & Test
     env:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
@@ -49,6 +48,11 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.ssh_key }}
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "remerge-deploy"
+          git config --global user.email "tech@remerge.io"
 
       - name: Update Git config
         run: |
