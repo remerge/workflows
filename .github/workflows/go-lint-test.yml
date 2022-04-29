@@ -32,7 +32,7 @@ on:
 jobs:
   go-model-lint-test:
     runs-on: ubuntu-latest
-    name: Go Model Lint & Test
+    name: Go Lint & Test
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
@@ -67,6 +67,12 @@ jobs:
         with:
           ssh-private-key: |
             ${{ secrets.ssh_key }}
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "remerge-deploy"
+          git config --global user.email "tech@remerge.io"
+
       - name: Update Git config
         run: |
           git config --global url."git@github.com:".insteadOf "https://github.com/"
