@@ -8,6 +8,11 @@ on:
         type: string
         required: false
         default: ""
+      fetch_depth:
+        default: 1
+        type: string
+        description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+        required: false
     secrets:
       ssh_key:
         description: |
@@ -18,7 +23,7 @@ on:
         description: |
           Google service account JSON to use while testing. It should be fake credentials, unless your tests are to 
           be run against a real bucket.
-        required: true
+        required: false
       pypi_username:
         description: |
           Username to use to log in into our private PyPi server.
@@ -35,6 +40,8 @@ jobs:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: ${{ inputs.fetch_depth }}
       - name: Install poetry
         run: pipx install poetry
       - name: Extract Python version from pyproject.toml
