@@ -58,6 +58,9 @@ on:
       dw1_nomad_token:
         required: false
         description: "Nomad token for accessing Nomad DW1 cluster"
+      hel_nomad_token:
+        required: false
+        description: "Nomad token for accessing Nomad HEL cluster"
 jobs:
   nomad:
     runs-on: [self-hosted, linux]
