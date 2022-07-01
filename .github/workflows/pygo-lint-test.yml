@@ -75,7 +75,7 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
       - name: Extract Python version from pyproject.toml
-        run: echo "PYTHON_VERSION=$(grep -E "^python\s?=" < pyproject.toml | awk '{print $3}' | sed -r 's/^"\^?\~?|"$//g')" >> "$GITHUB_ENV"
+        run: echo "PYTHON_VERSION=$(grep -E "^python\s?=" < pyproject.toml | awk '{print $3}' | sed -r 's/^"\^?\~?>?=?|<?=?|"$//g' | sed -r 's/,/ /' | awk '{print $1}')" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v3
         with:
           python-version: ${{ inputs.python_version || env.PYTHON_VERSION }}
