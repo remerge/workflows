@@ -1,0 +1,45 @@
+name: Handle event that represents a possible dependency update
+
+on:
+  repository_dispatch:
+    types: [possible-dependency-update]
+
+env:
+  GOPRIVATE: github.com/remerge
+  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+  GO111MODULE: on
+
+jobs:
+  create-or-update-pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Set global git config
+        run: git config --global url.git@github.com:.insteadof https://github.com/
+
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - run: |
+          go get ${{ github.event.client_payload.repo_path }}
+          go mod tidy
+          git diff
+
+      - name: Create or update pull request to update ${{ github.event.client_payload.repo_name }}
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.PAT_FOR_UPDATING }}
+          commit-message: Update ${{ github.event.client_payload.repo_name }}
+          committer: Dependency Updater <noreply@example.com>
+          author: Dependency Updater <noreply@example.com>
+          signoff: false
+          branch: update-${{ github.event.client_payload.repo_name }}
+          delete-branch: true
+          title: Update ${{ github.event.client_payload.repo_name }}
+          body: |
+            `go get ${{ github.event.client_payload.repo_path }} && go mod tidy`
+          labels: depupdater
