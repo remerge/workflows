@@ -33,6 +33,8 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.artifact }}
+    - run: chmod +x ${{ inputs.artifact }}
+    - run: tar -czvf ${{ inputs.artifact }}.tar.gz ${{ inputs.artifact }}
     - uses: jakejarvis/s3-sync-action@master
       with:
         args: --acl private --follow-symlinks --delete
@@ -42,5 +44,3 @@ jobs:
         AWS_S3_BUCKET: ${{ inputs.aws_bucket }}
         SOURCE_DIR: './'
         DEST_DIR: ${{ inputs.directory }}
-
-
