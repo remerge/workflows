@@ -1,8 +1,8 @@
 # we want to run the "go get $dependency && go mod tidy && open PR if needed"
-# workflow every time the main branch gets updated. this fixes possible
-# merge conflicts in existing branches/PRs (and closes them if they're not
-# needed any more). the easiest way to trigger that code seems to be sending
-# a bunch of events to "this" repo.
+# workflow for every dependency every time the main branch gets updated.
+# this fixes possible merge conflicts in existing branches/PRs and closes them
+# if they're not needed any more. the easiest way to trigger that code seems
+# to be sending a bunch of events to "this" repo.
 
 name: Check repos I depend on
 
