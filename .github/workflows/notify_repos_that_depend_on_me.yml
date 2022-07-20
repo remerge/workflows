@@ -8,9 +8,6 @@ on:
         required: true
         description: "String containing a JSON list (because we can't pass a list as an input)"
     secrets:
-      ssh_key:
-        description: "SSH key to use"
-        required: true
       pat_for_updating:
         description: "Need a PAT with update permissions to send events to a repo"
         required: true
