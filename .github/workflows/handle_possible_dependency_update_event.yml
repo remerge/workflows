@@ -6,7 +6,6 @@ on:
 
 env:
   GOPRIVATE: github.com/remerge
-  SSH_AUTH_SOCK: /tmp/ssh_agent.sock
   GO111MODULE: on
 
 jobs:
