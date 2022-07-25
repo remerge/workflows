@@ -33,8 +33,8 @@ jobs:
         with:
           token: ${{ secrets.PAT_FOR_UPDATING }}
           commit-message: Update ${{ github.event.client_payload.repo_name }}
-          committer: Dependency Updater <noreply@example.com>
-          author: Dependency Updater <noreply@example.com>
+          committer: Dependency Updater <tech@remerge.io>
+          author: Dependency Updater <tech@remerge.io>
           signoff: false
           branch: update-${{ github.event.client_payload.repo_name }}
           delete-branch: true
