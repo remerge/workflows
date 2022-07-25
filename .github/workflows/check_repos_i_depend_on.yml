@@ -33,7 +33,7 @@ jobs:
       with:
         token: ${{ secrets.personal_access_token }}
         repository: ${{ github.repository }}
-        event-type: new-main-commit
+        event-type: possible-dependency-update
         client-payload: |
           {
             "repo_path": "github.com/remerge/${{ matrix.dependency }}",
