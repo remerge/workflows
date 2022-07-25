@@ -1,8 +1,23 @@
 name: Handle event that represents a possible dependency update
 
 on:
-  repository_dispatch:
-    types: [possible-dependency-update]
+  workflow_call:
+    inputs:
+      repo_path:
+        type: string
+        required: true
+        description: "the one that looks like 'github.com/remerge/xyz'"
+      repo_name:
+        type: string
+        required: true
+        description: "the one that looks like 'remerge/xyz'"
+    secrets:
+      personal_access_token:
+        description: "Need a PAT with update permissions to send events to a repo"
+        required: true
+      ssh_key:
+        description: "Need an SSH key to fetch private repos"
+        required: true
 
 env:
   GOPRIVATE: github.com/remerge
@@ -15,7 +30,7 @@ jobs:
       - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.5.0
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
+          ssh-private-key: ${{ secrets.ssh_key }}
 
       - name: Set global git config
         run: git config --global url.git@github.com:.insteadof https://github.com/
@@ -24,21 +39,21 @@ jobs:
         uses: actions/checkout@v3
 
       - run: |
-          go get ${{ github.event.client_payload.repo_path }}
+          go get ${{ inputs.repo_path }}
           go mod tidy
           git diff
 
-      - name: Create or update pull request to update ${{ github.event.client_payload.repo_name }}
+      - name: Create or update pull request to update ${{ inputs.repo_name }}
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.DEPUPDATER_GH_TOKEN }}
-          commit-message: Update ${{ github.event.client_payload.repo_name }}
+          token: ${{ secrets.personal_access_token }}
+          commit-message: Update ${{ inputs.repo_name }}
           committer: Dependency Updater <tech@remerge.io>
           author: Dependency Updater <tech@remerge.io>
           signoff: false
-          branch: update-${{ github.event.client_payload.repo_name }}
+          branch: update-${{ inputs.repo_name }}
           delete-branch: true
-          title: Update ${{ github.event.client_payload.repo_name }}
+          title: Update ${{ inputs.repo_name }}
           body: |
-            `go get ${{ github.event.client_payload.repo_path }} && go mod tidy`
+            `go get ${{ inputs.repo_path }} && go mod tidy`
           labels: depupdater
