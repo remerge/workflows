@@ -27,7 +27,7 @@ jobs:
       with:
         token: ${{ secrets.personal_access_token }}
         repository: remerge/${{ matrix.dependant }}
-        event-type: new-main-commit
+        event-type: possible-dependency-update
         client-payload: |
           {
             "repo_path": "github.com/${{ github.repository }}",
