@@ -31,7 +31,7 @@ jobs:
       - name: Create or update pull request to update ${{ github.event.client_payload.repo_name }}
         uses: peter-evans/create-pull-request@v4
         with:
-          token: ${{ secrets.PAT_FOR_UPDATING }}
+          token: ${{ secrets.DEPUPDATER_GH_TOKEN }}
           commit-message: Update ${{ github.event.client_payload.repo_name }}
           committer: Dependency Updater <tech@remerge.io>
           author: Dependency Updater <tech@remerge.io>
