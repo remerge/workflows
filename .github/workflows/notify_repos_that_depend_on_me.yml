@@ -8,7 +8,7 @@ on:
         required: true
         description: "String containing a JSON list (because we can't pass a list as an input)"
     secrets:
-      pat_for_updating:
+      personal_access_token:
         description: "Need a PAT with update permissions to send events to a repo"
         required: true
 
@@ -25,7 +25,7 @@ jobs:
     - name: Dispatch Event
       uses: peter-evans/repository-dispatch@v2
       with:
-        token: ${{ secrets.pat_for_updating }}
+        token: ${{ secrets.personal_access_token }}
         repository: remerge/${{ matrix.dependant }}
         event-type: new-main-commit
         client-payload: |
