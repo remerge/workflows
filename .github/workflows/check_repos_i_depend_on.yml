@@ -32,7 +32,7 @@ jobs:
       shell: bash
 
     - name: Check possible dependency update
-      uses: joelanders/check-possible-dependency-update@main
+      uses: remerge/check-possible-dependency-update@main
       with:
         repo_path: "github.com/remerge/${{ matrix.dependency }}"
         repo_name: "remerge/${{ matrix.dependency }}"
