@@ -17,6 +17,9 @@ on:
       personal_access_token:
         description: "Need a PAT with update permissions to send events to a repo"
         required: true
+      ssh_key:
+        description: "Need an SSH key to fetch private repos"
+        required: true
 
 jobs:
   notify-self-about-all-dependencies:
@@ -28,14 +31,10 @@ jobs:
     - run: echo ${{ matrix.dependency }}
       shell: bash
 
-    - name: Dispatch Event
-      uses: peter-evans/repository-dispatch@v2
+    - name: Check possible dependency update
+      uses: joelanders/check-possible-dependency-update@main
       with:
-        token: ${{ secrets.personal_access_token }}
-        repository: ${{ github.repository }}
-        event-type: possible-dependency-update
-        client-payload: |
-          {
-            "repo_path": "github.com/remerge/${{ matrix.dependency }}",
-            "repo_name": "remerge/${{ matrix.dependency }}"
-          }
+        repo_path: "github.com/remerge/${{ matrix.dependency }}"
+        repo_name: "remerge/${{ matrix.dependency }}"
+        personal_access_token: ${{ secrets.personal_access_token }}
+        ssh_key: ${{ secrets.ssh_key }}
