@@ -12,6 +12,10 @@ on:
         type: string
         required: true
         description: "String containing a JSON list (because we can't pass a list as an input)"
+      assign_to:
+        type: string
+        required: true
+        description: "Github username we should assign the PRs to"
     secrets:
       app_id:
         required: true
@@ -38,6 +42,7 @@ jobs:
       with:
         repo_path: "github.com/remerge/${{ matrix.dependency }}"
         repo_name: "remerge/${{ matrix.dependency }}"
+        assign_to: ${{ inputs.assign_to }}
         app_id: ${{ secrets.app_id }}
         app_key: ${{ secrets.app_key }}
         ssh_key: ${{ secrets.ssh_key }}
