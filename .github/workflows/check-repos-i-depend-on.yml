@@ -12,9 +12,13 @@ on:
         type: string
         required: true
         description: "String containing a JSON list (because we can't pass a list as an input)"
+      app_id:
+        type: string
+        required: true
+        description: "App id that we exchange for a token."
     secrets:
-      personal_access_token:
-        description: "Need a PAT with update permissions to send events to a repo"
+      app_key:
+        description: "Private app key that we can exchange for a token."
         required: true
       ssh_key:
         description: "Need an SSH key to fetch private repos"
@@ -35,5 +39,6 @@ jobs:
       with:
         repo_path: "github.com/remerge/${{ matrix.dependency }}"
         repo_name: "remerge/${{ matrix.dependency }}"
-        personal_access_token: ${{ secrets.personal_access_token }}
+        app_id: ${{ inputs.app_id }}
+        app_key: ${{ secrets.app_key }}
         ssh_key: ${{ secrets.ssh_key }}
