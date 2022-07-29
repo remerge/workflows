@@ -7,11 +7,11 @@ on:
         type: string
         required: true
         description: "String containing a JSON list (because we can't pass a list as an input)"
+    secrets:
       app_id:
         type: string
         required: true
         description: "App id that we exchange for a token."
-    secrets:
       app_key:
         description: "Private app key that we can exchange for a token."
         required: true
@@ -30,7 +30,7 @@ jobs:
       id: generate_app_token
       uses: tibdex/github-app-token@v1
       with:
-        app_id: ${{ inputs.app_id }}
+        app_id: ${{ secrets.app_id }}
         private_key: ${{ secrets.app_key }}
 
         # Optional (defaults to all the Github App permissions).
