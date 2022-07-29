@@ -30,7 +30,7 @@ jobs:
       id: generate_app_token
       uses: tibdex/github-app-token@v1
       with:
-        app_id: ${{ inputs.depupdater_app_id }}
+        app_id: ${{ inputs.app_id }}
         private_key: ${{ secrets.app_key }}
 
         # Optional (defaults to all the Github App permissions).
