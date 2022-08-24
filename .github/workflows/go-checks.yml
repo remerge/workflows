@@ -51,6 +51,11 @@ on:
         required: false
         default: false
         description: "Do not run docker-compose even compose file is present"
+      use-ssh-key:
+        type: boolean
+        required: false
+        default: true
+        description: "use ssh secret"
     secrets:
       ssh_key:
         description: "SSH key to use"
@@ -95,7 +100,8 @@ jobs:
     - uses: webfactory/ssh-agent@v0.5.0
       with:
         ssh-private-key: '${{ secrets.ssh_key }}'
-      if: "${{ secrets.ssh_key != '' }}"
+      if: "${{ inputs.use-ssh-key }}"
+
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
     - run: make ${{ inputs.lint-target }}
