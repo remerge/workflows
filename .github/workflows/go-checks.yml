@@ -95,6 +95,7 @@ jobs:
     - uses: webfactory/ssh-agent@v0.5.0
       with:
         ssh-private-key: '${{ secrets.ssh_key }}'
+      if: "${{ secrets.ssh_key != '' }}"
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
     - run: make ${{ inputs.lint-target }}
