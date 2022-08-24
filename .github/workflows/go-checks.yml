@@ -91,11 +91,14 @@ jobs:
         bundler-cache: true
         ruby-version: '${{ inputs.lint-gen-ruby-version }}'
       if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' }}"
+
     - uses: webfactory/ssh-agent@v0.5.0
       with:
         ssh-private-key: '${{ secrets.ssh_key }}'
-      if: "${{ inputs.goprivate != "" }}"
+      if: "${{ inputs.goprivate != '' }}"
+
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+
     - run: make ${{ inputs.lint-target }}
     - run: make gen && git diff --exit-code --name-only HEAD
       if: '!inputs.no-lint-gen'
