@@ -54,7 +54,7 @@ on:
     secrets:
       ssh_key:
         description: "SSH key to use"
-        required: true
+        required: false
 
 env:
   GOPRIVATE: ${{ inputs.goprivate }}
