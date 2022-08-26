@@ -17,7 +17,7 @@ on:
         description: "Git branches eligible to build"
         type: string
         required: false
-        default: 'master production main'
+        default: 'production'
     outputs:
       artifact:
         description: 'Binary output artifact'
