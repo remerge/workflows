@@ -120,7 +120,7 @@ jobs:
       - name: Upload the artifact to S3
         uses: jakejarvis/s3-sync-action@master
         with:
-          args: --acl private --follow-symlinks --delete
+          args: --acl private --follow-symlinks
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
@@ -131,7 +131,7 @@ jobs:
       - name: Upload the artifact to S3 for PyPi
         uses: jakejarvis/s3-sync-action@master
         with:
-          args: --acl private --follow-symlinks --delete
+          args: --acl private --follow-symlinks
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
