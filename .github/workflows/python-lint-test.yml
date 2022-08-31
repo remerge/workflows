@@ -79,7 +79,7 @@ jobs:
           poetry config repositories.remerge https://pypi.remerge.io
           poetry config http-basic.remerge '${{ secrets.pypi_username }}' '${{ secrets.pypi_password }}'
 
-      - run: poetry install -v
+      - run: poetry install -vv
 
       - name: Lint
         run: make lint
