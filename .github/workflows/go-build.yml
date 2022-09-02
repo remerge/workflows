@@ -22,6 +22,9 @@ on:
       artifact:
         description: 'Binary output artifact'
         value: '${{ jobs.go-app.outputs.artifact }}'
+      revision:
+        description: 'Binary artifact revision'
+        value: '${{ jobs.go-app.outputs.revision }}'
     secrets:
       ssh_key:
         description: "SSH key to use"
@@ -36,6 +39,7 @@ jobs:
       REPONAME: ${{ github.event.repository.name }}
     outputs:
       artifact: '${{ github.event.repository.name }}.linux.amd64'
+      revision: '${{ github.sha }}'
 
     steps:
     - uses: actions/checkout@v2
