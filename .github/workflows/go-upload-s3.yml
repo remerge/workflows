@@ -41,6 +41,7 @@ jobs:
     - run: chmod +x ${{ inputs.artifact }}
     - run: tar -czvf ${{ inputs.artifact }}.tar.gz ${{ inputs.artifact }}
       if: "${{ inputs.revision == '' }}"
+    - run: echo ${{ inputs.artifact }}-{{ inputs.revision }}.tar.gz
     - run: tar -czvf ${{ inputs.artifact }}-{{ inputs.revision }}.tar.gz ${{ inputs.artifact }}
       if: "${{ inputs.revision != '' }}"
     - uses: jakejarvis/s3-sync-action@master
