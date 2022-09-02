@@ -44,6 +44,17 @@ jobs:
     - run: tar -czvf ${{ inputs.artifact }}-${{ inputs.revision }}.tar.gz ${{ inputs.artifact }}
       if: "${{ inputs.revision != '' }}"
     - uses: jakejarvis/s3-sync-action@master
+      if: "${{ inputs.revision == '' }}"
+      with:
+        args: --acl private --follow-symlinks --delete
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
+        AWS_S3_BUCKET: ${{ inputs.aws_bucket }}
+        SOURCE_DIR: './'
+        DEST_DIR: ${{ inputs.directory }}
+    - uses: jakejarvis/s3-sync-action@master
+      if: "${{ inputs.revision != '' }}"
       with:
         args: --acl private --follow-symlinks
       env:
