@@ -8,6 +8,11 @@ on:
         type: string
         required: false
         default: '${{ github.event.repository.name }}.linux.amd64'
+      revision:
+        description: "Artifact revision"
+        type: string
+        required: false
+        default: ''
       aws_bucket:
         description: "AWS bucket"
         type: string
@@ -35,6 +40,9 @@ jobs:
         name: ${{ inputs.artifact }}
     - run: chmod +x ${{ inputs.artifact }}
     - run: tar -czvf ${{ inputs.artifact }}.tar.gz ${{ inputs.artifact }}
+      if: "${{ inputs.lint-gen-ruby-version == '' }}"
+    - run: tar -czvf ${{ inputs.artifact }}-{{ inputs.revision }}.tar.gz ${{ inputs.artifact }}
+      if: "${{ inputs.lint-gen-ruby-version != '' }}"
     - uses: jakejarvis/s3-sync-action@master
       with:
         args: --acl private --follow-symlinks --delete
