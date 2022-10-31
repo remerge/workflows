@@ -33,12 +33,12 @@ on:
         default: .
 
     secrets:
-      DEPLOY_USER_SSH_KEY:
+      deploy_user_ssh_key:
         required: true
         description: "Private key for deploy user to access private repos"
-      ARTIFACT_REGISTRY_GOOGLE_SERVICE_ACCOUNT_JSON:
+      gar_service_account_key:
         required: true
-        description: ""
+        description: "Google Artifact Registry service account key (JSON)"
 
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         with:
-          ssh-private-key: ${{ secrets.DEPLOY_USER_SSH_KEY }}
+          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -61,12 +61,12 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.ARTIFACT_REGISTRY_GOOGLE_SERVICE_ACCOUNT_JSON }}
+          credentials_json: ${{ secrets.gar_service_account_key }}
 
       - name: Login to GAR
         run: |
-          cat ${{ steps.auth.outputs.credentials_file_path }} | docker login -u _json_key \
-          --password-stdin ${{ inputs.registry }}
+          docker login -u _json_key \
+          --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
