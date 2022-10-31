@@ -40,6 +40,8 @@ on:
         required: true
         description: "Google Artifact Registry service account key (JSON)"
 
+env:
+  image_path: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
 
 jobs:
   docker:
@@ -84,3 +86,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           ssh: default
+          cache-from: type=registry,ref=${{ env.image_path }}:buildcache
+          cache-to: type=registry,ref=${{ env.image_path }}:buildcache,mode=max
