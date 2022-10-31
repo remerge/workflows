@@ -40,8 +40,6 @@ on:
         required: true
         description: "Google Artifact Registry service account key (JSON)"
 
-env:
-  image_path: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
 
 jobs:
   build-and-push:
@@ -74,17 +72,15 @@ jobs:
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ env.image_path }}
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
           tags: |
             type=sha
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v2
         with:
           context: ${{ inputs.context }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           ssh: default
-          cache-from: type=registry,ref=${{ env.image_path }}:buildcache
-          cache-to: type=registry,ref=${{ env.image_path }}:buildcache,mode=max
