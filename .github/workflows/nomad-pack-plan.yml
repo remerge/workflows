@@ -100,7 +100,7 @@ jobs:
         res="${res//$'\n'/'%0A'}"
         res="${res//$'\r'/'%0D'}"
 
-        echo "stdout=$res" >> $GITHUB_OUTPUT
+        echo "stdout=$res" >> "$GITHUB_OUTPUT"
 
 
     - name: PR Comment
