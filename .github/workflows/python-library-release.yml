@@ -115,7 +115,7 @@ jobs:
           make tag
       - name: Set version output
         id: versionSet
-        run: echo "::set-output name=version::$(make version)"
+        run: echo "version=$(make version)" >> $GITHUB_OUTPUT
 
       - name: Upload the artifact to S3
         uses: jakejarvis/s3-sync-action@master
