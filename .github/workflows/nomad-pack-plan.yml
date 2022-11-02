@@ -79,16 +79,15 @@ jobs:
         images: ${{ inputs.image_name }}
         tags: |
           type=sha
-          
     - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.DEPLOY_USER_SSH_KEY }}
-            
+      uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.DEPLOY_USER_SSH_KEY }}
+
     - name: Update Git config
-        run: |
-          git config --global url."git@github.com:".insteadOf "https://github.com/"
+      run: |
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
 
     - name: Add Nomad pack registry
       run: |
