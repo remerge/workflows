@@ -84,7 +84,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: |
-            ${{ secrets.ssh_key }}
+            ${{ secrets.DEPLOY_USER_SSH_KEY }}
             
     - name: Update Git config
         run: |
