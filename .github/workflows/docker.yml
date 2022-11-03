@@ -32,6 +32,11 @@ on:
         description: "Docker build context"
         default: .
 
+    outputs:
+      image:
+        description: "Full path of produced image"
+        value: ${{ jobs.build-and-push.outputs.image }}
+
     secrets:
       deploy_user_ssh_key:
         required: true
@@ -44,6 +49,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v3
 
