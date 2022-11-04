@@ -87,6 +87,12 @@ jobs:
       run: |
         nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.ssh_key }}
+
     - name: Deploy to Nomad
       if: ${{ github.event_name != 'pull_request' }}
       env:
