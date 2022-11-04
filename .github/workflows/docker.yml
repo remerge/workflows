@@ -70,12 +70,18 @@ jobs:
         with:
           credentials_json: ${{ secrets.gar_service_account_key }}
 
+      - name: Read credentials file
+        id: cred
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ${{ steps.auth.outputs.credentials_file_path }}
+
       - name: Login to GAR
         uses: docker/login-action@v2
         with:
           registry: ${{ inputs.registry }}
           username: _json_key
-          password: ${{ steps.auth.outputs.credentials_file_path }}
+          password: ${{ steps.cred.outputs.content }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
