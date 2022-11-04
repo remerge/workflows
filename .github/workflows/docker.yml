@@ -81,12 +81,6 @@ jobs:
           tags: |
             type=sha
 
-      - name: Cache register
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
@@ -95,5 +89,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           ssh: default
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
