@@ -29,8 +29,8 @@ on:
       context:
         type: string
         required: false
-        description: "Docker build context"
         default: .
+        description: "Docker build context"
 
     outputs:
       image:
@@ -41,6 +41,7 @@ on:
       deploy_user_ssh_key:
         required: true
         description: "Private key for deploy user to access private repos"
+
       gar_service_account_key:
         required: true
         description: "Google Artifact Registry service account key (JSON)"
@@ -54,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup SSH
+      - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.0
         with:
           ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
@@ -62,13 +63,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate with Google Cloud
         id: auth
         uses: google-github-actions/auth@v0
         with:
           credentials_json: ${{ secrets.gar_service_account_key }}
 
-      - name: Login to GAR
+      - name: Sign in to Google Artifact Registry
         run: |
           docker login -u _json_key \
           --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
