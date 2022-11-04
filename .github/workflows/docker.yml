@@ -56,8 +56,6 @@ jobs:
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.0
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         with:
           ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
 
