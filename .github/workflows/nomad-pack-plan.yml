@@ -61,6 +61,9 @@ on:
       hel_nomad_token:
         required: false
         description: "Nomad token for accessing Nomad HEL cluster"
+      ssh_key:
+        description: "SSH key to use"
+        required: true
 jobs:
   nomad:
     runs-on: [self-hosted, linux]
