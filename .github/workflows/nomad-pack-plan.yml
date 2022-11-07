@@ -95,7 +95,7 @@ jobs:
 
     - name: Add Nomad pack registry
       run: |
-        nomad-pack registry add remerge-pack ${{ inputs.registry }}
+        nomad-pack registry add remerge-pack ${{ inputs.registry }} --ref="SRE-256-use-the-applicable-nomad-pack-for-the-trigger"
 
     - name: Run Nomad Plan
       id: nomad_plan
