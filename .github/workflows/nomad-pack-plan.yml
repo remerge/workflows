@@ -104,7 +104,7 @@ jobs:
         NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
       run: |
         nomad-pack plan ${{ inputs.pack_name }} \
-        # --var='task_image=europe-west4-docker.pkg.dev/artifact-registry-ff9b/sample/trigger:sha-babd5c2:sha-babd5c2' \
+        --var='task_image=europe-west4-docker.pkg.dev/artifact-registry-ff9b/sample/trigger:sha-babd5c2:sha-babd5c2' \
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
