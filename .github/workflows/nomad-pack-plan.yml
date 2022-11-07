@@ -103,6 +103,7 @@ jobs:
         NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
         NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
       run: |
+        nomad-pack registry list
         nomad-pack plan ${{ inputs.pack_name }} \
         --var='task_image=${{ steps.meta.outputs.tags }}' \
         --var='datacenter=${{ matrix.cluster_detail.cluster }}' \
