@@ -19,16 +19,16 @@ on:
           Example:
             [
               {
-                "cluster": "gce",
+                "cluster": "cluster_1",
                 "environment": "production",
-                "api_url": "http://nomad.nomad-test.remerge.io/",
-                "api_key_name": "gce_nomad_token"
+                "api_url": "nomad_cluster1_api_url",
+                "api_key_name": "nomad_cluster1_api_secret_key_name"
               },
               {
-                "cluster": "dw1",
+                "cluster": "cluster_2",
                 "environment": "production",
-                "api_url": "http://nomad.mon.rmge.net/",
-                "api_key_name": "dw1_nomad_token"
+                "api_url": "nomad_cluster2_api_url",
+                "api_key_name": "nomad_cluster2_api_secret_key_name"
               }
             ]
       image_name:
@@ -66,32 +66,26 @@ on:
         required: true
 jobs:
   nomad:
-    runs-on: [self-hosted, linux]
+    runs-on: [self-hosted, linux, nomad]
     strategy:
       matrix:
         cluster_detail: ${{fromJson(inputs.cluster_details)}}
     steps:
     - uses: actions/checkout@v2
+
     - uses: actions/setup-node@v2
       with:
-        node-version: '14'
-    - name: Extract metadata (tags, labels) for Docker
-      id: meta
-      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-      with:
-        images: ${{ inputs.image_name }}
-        tags: |
-          type=sha
-
-    - name: Add Nomad pack registry
-      run: |
-        nomad-pack registry add remerge-pack ${{ inputs.registry }}
+        node-version: '16'
 
     - name: Setup SSH
       uses: webfactory/ssh-agent@v0.5.0
       with:
         ssh-private-key: |
           ${{ secrets.ssh_key }}
+
+    - name: Add Nomad pack registry
+      run: |
+        nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
     - name: Deploy to Nomad
       if: ${{ github.event_name != 'pull_request' }}
