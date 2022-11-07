@@ -109,7 +109,7 @@ jobs:
         --var='environment=${{ matrix.cluster_detail.environment }}' \
         --var='job_name=${{ inputs.name }}' --name=${{ inputs.name }} \
         --var-file=${{ inputs.variables_file_name }} \
-        --registry=remerge-pack
+        --registry=remerge-pack --ref="SRE-256-use-the-applicable-nomad-pack-for-the-trigger"
 
     #     echo "::set-output name=stdout::$res"
 
