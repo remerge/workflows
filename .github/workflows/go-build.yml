@@ -38,7 +38,7 @@ jobs:
       artifact: '${{ github.event.repository.name }}.linux.amd64'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/cache@v3
       with:
         path: |
