@@ -7,6 +7,11 @@ on:
         type: string
         required: true
         description: "String containing a JSON list (because we can't pass a list as an input)"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       personal_access_token:
         description: "Need a PAT with update permissions to send events to a repo"
@@ -17,7 +22,7 @@ jobs:
     strategy:
       matrix:
         dependant: ${{ fromJSON(inputs.dependants) }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
     - run: echo ${{ matrix.dependant }}
       shell: bash

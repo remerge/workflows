@@ -51,6 +51,11 @@ on:
         required: false
         default: false
         description: "Do not run docker-compose even compose file is present"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       ssh_key:
         description: "SSH key to use"
@@ -62,7 +67,7 @@ env:
 jobs:
   go-test:
     name: "lint_and_test"
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
     - uses: actions/checkout@v3
     - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"

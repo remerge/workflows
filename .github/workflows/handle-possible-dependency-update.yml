@@ -11,6 +11,11 @@ on:
         type: string
         required: true
         description: "the one that looks like 'remerge/xyz'"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       personal_access_token:
         description: "Need a PAT with update permissions to send events to a repo"
@@ -25,7 +30,7 @@ env:
 
 jobs:
   create-or-update-pull-request:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
       - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.5.0

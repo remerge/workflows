@@ -13,6 +13,11 @@ on:
         type: string
         description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
         required: false
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       ssh_key:
         description: |
@@ -35,7 +40,7 @@ on:
 
 jobs:
   python-model-lint-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     env:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:

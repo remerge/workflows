@@ -33,6 +33,11 @@ on:
         type: string
         required: false
         default: '${{ github.repository }}'
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     outputs:
       version:
         description: "The version of the library that got released"
@@ -61,7 +66,7 @@ on:
 jobs:
   python-library-release:
     if: ${{ contains(inputs.branches, github.head_ref || github.ref_name) }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     env:
       REPONAME: ${{ github.event.repository.name }}
     outputs:
