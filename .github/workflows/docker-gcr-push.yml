@@ -41,10 +41,10 @@ jobs:
   go-modules:
     runs-on: ${{ inputs.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.0
+        uses: webfactory/ssh-agent@v0.6.0
         with:
           ssh-private-key: |
             ${{ secrets.deploy_user_ssh_key }}

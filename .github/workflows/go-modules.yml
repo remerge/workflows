@@ -32,7 +32,7 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/cache@v3
       with:
         path: |
@@ -45,7 +45,7 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - uses: webfactory/ssh-agent@v0.5.0
+    - uses: webfactory/ssh-agent@v0.6.0
       with:
         ssh-private-key: '${{ secrets.ssh_key }}'
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
