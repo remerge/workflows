@@ -31,6 +31,12 @@ on:
         required: false
         default: .
         description: "Docker build context"
+        
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
 
     outputs:
       image:
@@ -49,7 +55,7 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     outputs:
       image: ${{ steps.meta.outputs.tags }}
     steps:

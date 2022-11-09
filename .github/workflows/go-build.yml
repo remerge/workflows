@@ -18,6 +18,11 @@ on:
         type: string
         required: false
         default: 'production'
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     outputs:
       artifact:
         description: 'Binary output artifact'
@@ -30,7 +35,7 @@ on:
 jobs:
   go-app:
     if: ${{ contains(inputs.branches, github.head_ref || github.ref_name) }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
       REPONAME: ${{ github.event.repository.name }}
