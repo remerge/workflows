@@ -18,6 +18,11 @@ on:
         type: string
         description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
         required: false
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       ssh_key:
         description: |
@@ -32,7 +37,7 @@ on:
 
 jobs:
   go-model-lint-test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     name: Go Lint & Test
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
@@ -64,7 +69,7 @@ jobs:
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.0
+        uses: webfactory/ssh-agent@v0.6.0
         with:
           ssh-private-key: |
             ${{ secrets.ssh_key }}

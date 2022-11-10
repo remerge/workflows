@@ -24,6 +24,11 @@ on:
         required: false
         default: "dep"
         description: "target upstream"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       ssh_key:
         description: "SSH key to use"
@@ -31,12 +36,12 @@ on:
 
 jobs:
   upstream:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
     - uses: actions/checkout@v3
       with:
         persist-credentials: false
-    - uses: webfactory/ssh-agent@v0.5.0
+    - uses: webfactory/ssh-agent@v0.6.0
       with:
         ssh-private-key: '${{ secrets.ssh_key }}'
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'

@@ -11,6 +11,11 @@ on:
         required: true
         type: string
         description: "Docker image to deploy"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       gh_auth_token:
         required: true
@@ -20,9 +25,9 @@ on:
         description: "Github token"
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -63,7 +68,7 @@ jobs:
           type=sha
 
     - name: Cache register
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-${{ hashFiles('**/Dockerfile') }}

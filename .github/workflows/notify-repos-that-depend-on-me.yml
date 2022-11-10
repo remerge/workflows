@@ -1,0 +1,40 @@
+name: Notify repos that depend on me
+
+on:
+  workflow_call:
+    inputs:
+      dependants:
+        type: string
+        required: true
+        description: "String containing a JSON list (because we can't pass a list as an input)"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
+    secrets:
+      personal_access_token:
+        description: "Need a PAT with update permissions to send events to a repo"
+        required: true
+
+jobs:
+  notify-all-dependants:
+    strategy:
+      matrix:
+        dependant: ${{ fromJSON(inputs.dependants) }}
+    runs-on: ${{ inputs.os }}
+    steps:
+    - run: echo ${{ matrix.dependant }}
+      shell: bash
+
+    - name: Dispatch Event
+      uses: peter-evans/repository-dispatch@v2
+      with:
+        token: ${{ secrets.personal_access_token }}
+        repository: remerge/${{ matrix.dependant }}
+        event-type: possible-dependency-update
+        client-payload: |
+          {
+            "repo_path": "github.com/${{ github.repository }}",
+            "repo_name": "${{ github.repository }}"
+          }

@@ -1,0 +1,100 @@
+name: Docker build and push to GAR
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        type: string
+        required: false
+        default: "europe-west4-docker.pkg.dev"
+        description: "Google Artifact registry"
+
+      project:
+        type: string
+        required: false
+        default: "artifact-registry-ff9b"
+        description: "GCP project"
+      
+      repo:
+        type: string
+        required: false
+        default: "sample"
+        description: "GCP project repository"
+      
+      image:
+        type: string
+        required: true
+        description: "Image name"
+
+      context:
+        type: string
+        required: false
+        default: .
+        description: "Docker build context"
+        
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
+
+    outputs:
+      image:
+        description: "Full path of produced image"
+        value: ${{ jobs.build-and-push.outputs.image }}
+
+    secrets:
+      deploy_user_ssh_key:
+        required: true
+        description: "Private key for deploy user to access private repos"
+
+      gar_service_account_key:
+        required: true
+        description: "Google Artifact Registry service account key (JSON)"
+
+
+jobs:
+  build-and-push:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.gar_service_account_key }}
+
+      - name: Sign in to Google Artifact Registry
+        run: |
+          docker login -u _json_key \
+          --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
+          tags: |
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ inputs.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          ssh: default
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

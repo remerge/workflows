@@ -65,7 +65,7 @@ jobs:
       matrix:
         cluster_detail: ${{fromJson(inputs.cluster_details)}}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/setup-node@v2
       with:
         node-version: '14'
@@ -100,7 +100,7 @@ jobs:
         res="${res//$'\n'/'%0A'}"
         res="${res//$'\r'/'%0D'}"
 
-        echo "::set-output name=stdout::$res"
+        echo "stdout=$res" >> "$GITHUB_OUTPUT"
 
 
     - name: PR Comment

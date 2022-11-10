@@ -1,0 +1,44 @@
+# we want to run the "go get $dependency && go mod tidy && open PR if needed"
+# workflow for every dependency every time the main branch gets updated.
+# this fixes possible merge conflicts in existing branches/PRs and closes them
+# if they're not needed any more.
+
+name: Check repos I depend on
+
+on:
+  workflow_call:
+    inputs:
+      dependencies:
+        type: string
+        required: true
+        description: "String containing a JSON list (because we can't pass a list as an input)"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
+    secrets:
+      personal_access_token:
+        description: "Need a PAT with update permissions to send events to a repo"
+        required: true
+      ssh_key:
+        description: "Need an SSH key to fetch private repos"
+        required: true
+
+jobs:
+  notify-self-about-all-dependencies:
+    strategy:
+      matrix:
+        dependency: ${{ fromJSON(inputs.dependencies) }}
+    runs-on: ${{ inputs.os }}
+    steps:
+    - run: echo ${{ matrix.dependency }}
+      shell: bash
+
+    - name: Check possible dependency update
+      uses: remerge/check-possible-dependency-update@main
+      with:
+        repo_path: "github.com/remerge/${{ matrix.dependency }}"
+        repo_name: "remerge/${{ matrix.dependency }}"
+        personal_access_token: ${{ secrets.personal_access_token }}
+        ssh_key: ${{ secrets.ssh_key }}

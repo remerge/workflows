@@ -21,6 +21,11 @@ on:
         required: false
         description: "Docker build context"
         default: .
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       service_account:
         required: true
@@ -34,12 +39,12 @@ env:
 
 jobs:
   go-modules:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.0
+        uses: webfactory/ssh-agent@v0.6.0
         with:
           ssh-private-key: |
             ${{ secrets.deploy_user_ssh_key }}
