@@ -2,6 +2,10 @@ name: Plan and deploy to Nomad Cluster using nomad-pack
 on:
   workflow_call:
     inputs:
+      name:
+        required: true
+        type: string
+        description: The unique identifier of this deployed instance of the pack
       cluster:
         required: true
         type: string
