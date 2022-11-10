@@ -70,7 +70,7 @@ jobs:
 
     - name: Add Nomad pack registry
       run: |
-        nomad-pack registry add remerge-pack ${{ inputs.registry }} --ref="SRE-256-use-the-applicable-nomad-pack-for-the-trigger"
+        nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
     - name: Run Nomad Pack Plan
       id: nomad_pack_plan
@@ -85,7 +85,7 @@ jobs:
         --var='environment=${{ inputs.environment }}' \
         --var-file=${{ inputs.variables_file_name }} \
         --name=${{ inputs.name }} --registry=remerge-pack  \
-        --exit-code-makes-changes=0 --ref='SRE-256-use-the-applicable-nomad-pack-for-the-trigger')
+        --exit-code-makes-changes=0)
 
         echo "${res}"
         res="${res//'%'/'%25'}"
@@ -122,5 +122,4 @@ jobs:
         --var='cluster=${{ inputs.cluster }}' \
         --var='environment=${{ inputs.environment }}' \
         --var-file=${{ inputs.variables_file_name }} \
-        --name=${{ inputs.name }} --registry=remerge-pack  \
-        --ref="SRE-256-use-the-applicable-nomad-pack-for-the-trigger"
+        --name=${{ inputs.name }} --registry=remerge-pack
