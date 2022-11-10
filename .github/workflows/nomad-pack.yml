@@ -1,4 +1,4 @@
-name: Plan a deploy to Nomad Cluster using nomad-pack
+name: Plan and deploy to Nomad Cluster using nomad-pack
 on:
   workflow_call:
     inputs:
@@ -83,6 +83,7 @@ jobs:
         --name=${{ inputs.name }} --registry=remerge-pack  \
         --exit-code-makes-changes=0 --ref="SRE-256-use-the-applicable-nomad-pack-for-the-trigger")
 
+        echo $res
         res="${res//'%'/'%25'}"
         res="${res//$'\n'/'%0A'}"
         res="${res//$'\r'/'%0D'}"
@@ -90,11 +91,6 @@ jobs:
         echo "stdout<<EOF" >> "${GITHUB_OUTPUT}"
         echo "${res}" >> "${GITHUB_OUTPUT}"
         echo "EOF" >> "${GITHUB_OUTPUT}"
-
-    - name: View context attributes
-      uses: actions/github-script@v6
-      with:
-        script: console.log(context)
 
     - name: PR Comment
       if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
