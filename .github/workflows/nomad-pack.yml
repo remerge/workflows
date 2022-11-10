@@ -92,7 +92,9 @@ jobs:
         res="${res//$'\n'/'%0A'}"
         res="${res//$'\r'/'%0D'}"
 
-        echo "stdout<<EOF"; echo "${res}"; echo "EOF"; >> "${GITHUB_OUTPUT}"
+        echo "stdout<<EOF" >> "${GITHUB_OUTPUT}"
+        echo "${res}" >> "${GITHUB_OUTPUT}"
+        echo "EOF" >> "${GITHUB_OUTPUT}"
 
     - name: PR Comment
       if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
