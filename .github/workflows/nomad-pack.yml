@@ -48,7 +48,7 @@ on:
         required: true
 jobs:
   nomad:
-    runs-on: [self-hosted, linux, nomad]
+    runs-on: [self-hosted, generic, nomad]
     steps:
     - uses: actions/checkout@v3
 
