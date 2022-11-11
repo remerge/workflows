@@ -55,9 +55,6 @@ jobs:
     runs-on: [self-hosted, generic, nomad]
     steps:
     - uses: actions/checkout@v3
-
-    - uses: actions/setup-node@v3
-
     - name: Setup SSH
       uses: webfactory/ssh-agent@v0.6.0
       with:

@@ -51,9 +51,6 @@ jobs:
         cluster_detail: ${{fromJson(inputs.cluster_details)}}
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '14'
     - name: Extract metadata (tags, labels) for Docker
       id: meta
       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
