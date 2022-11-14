@@ -1,0 +1,122 @@
+name: Plan and deploy to Nomad Cluster using nomad-pack
+on:
+  workflow_call:
+    inputs:
+      name:
+        required: true
+        type: string
+        description: The unique identifier of this deployed instance of the pack
+      cluster:
+        required: true
+        type: string
+        description: Nomad Cluster/Datacenter Name
+      environment:
+        required: true
+        type: string
+        description: Application environment to deploy
+      api_url:
+        required: true
+        type: string
+        description: Nomad cluster API address
+      image_name:
+        required: true
+        type: string
+        description: Docker image to deploy to cluster
+      registry:
+        required: true
+        type: string
+        description: Nomad pack registry to download.
+      pack_name:
+        required: true
+        type: string
+        description: Nomad pack in registry to use.
+      run_plan:
+        type: boolean
+        description: Specify whether to plan nomad pack to cluster
+        default: true
+      run_deploy:
+        type: boolean
+        description: Specify whether to deploy nomad pack to cluster
+        default: false
+      variables_file_name:
+        required: true
+        type: string
+        description: Relative path to nomad_pack variable.
+
+    secrets:
+      nomad_token:
+        required: false
+        description: "Nomad token for accessing Nomad cluster"
+      ssh_key:
+        description: "SSH key to use"
+        required: true
+jobs:
+  nomad:
+    runs-on: [self-hosted, generic, nomad]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.6.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.ssh_key }}
+
+    - name: Update Git config
+      run: |
+        git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+    - name: Add Nomad pack registry
+      run: |
+        nomad-pack registry add remerge-pack ${{ inputs.registry }}
+
+    - name: Run Nomad Pack Plan
+      id: nomad_pack_plan
+      if: ${{ inputs.run_plan }}
+      env:
+        NOMAD_TOKEN: ${{ secrets.nomad_token }}
+        NOMAD_ADDR: ${{ inputs.api_url }}
+      run: |
+        res=$(nomad-pack plan ${{ inputs.pack_name }} \
+        --var='task_image=${{ inputs.image_name }}' \
+        --var='cluster=${{ inputs.cluster }}' \
+        --var='environment=${{ inputs.environment }}' \
+        --var-file=${{ inputs.variables_file_name }} \
+        --name=${{ inputs.name }} --registry=remerge-pack  \
+        --exit-code-makes-changes=0)
+
+        echo "${res}"
+        res="${res//'%'/'%25'}"
+        res="${res//$'\n'/'%0A'}"
+        res="${res//$'\r'/'%0D'}"
+
+        {
+          echo "stdout<<EOF"
+          echo "${res}"
+          echo "EOF"
+        } >> "${GITHUB_OUTPUT}"
+
+    - name: PR Comment
+      if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.github_token}}
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Nomad Plan for ${{ inputs.cluster }} \n ${{ steps.nomad_pack_plan.outputs.stdout }}`
+          })
+
+    - name: Deploy to Nomad
+      if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+      env:
+        NOMAD_TOKEN: ${{ secrets.nomad_token }}
+        NOMAD_ADDR: ${{ inputs.api_url }}
+      run: |
+        nomad-pack run ${{ inputs.pack_name }} \
+        --var='task_image=${{ inputs.image_name }}' \
+        --var='cluster=${{ inputs.cluster }}' \
+        --var='environment=${{ inputs.environment }}' \
+        --var-file=${{ inputs.variables_file_name }} \
+        --name=${{ inputs.name }} --registry=remerge-pack
