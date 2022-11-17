@@ -1,0 +1,57 @@
+name: slack-notify
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        type: string
+        required: true
+        description: "Human-readable name of the deployed service"
+      channels:
+        type: string
+        required: false
+        description: "Comma-delimited list of Slack channels ID where the notification should be posted"
+        default: "C8VDK46Q4"
+    
+    secrets:
+      slack_bot_token:
+        required: true
+        description: "Access token for Slack"
+
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: ${{ inputs.channels }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "New ${{ inputs.service_name }} deployed :rocket:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Revision*\n${{ github.sha }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*By*\n${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.slack_bot_token }}
