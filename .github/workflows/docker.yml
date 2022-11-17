@@ -17,8 +17,7 @@ on:
       
       repo:
         type: string
-        required: false
-        default: "sample"
+        required: true
         description: "GCP project repository"
       
       image:
