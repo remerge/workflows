@@ -66,6 +66,7 @@ jobs:
             }
 
             return {
+                text: header,
                 blocks: [
                     {
                         type: "header",
