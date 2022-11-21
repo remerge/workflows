@@ -7,51 +7,111 @@ on:
         type: string
         required: true
         description: "Human-readable name of the deployed service"
+      docker_image:
+        type: string
+        required: true
+        description: "Docker image name"
       channels:
         type: string
         required: false
         description: "Comma-delimited list of Slack channels ID where the notification should be posted"
         default: "C8VDK46Q4"
-    
+      status:
+        type: string
+        required: false
+        description: "Deployment status; 'success' if all went well, anything else if an error occurred"
+      update_ts:
+        type: string
+        required: false
+        description: "Timestamp of a previous message which should be updated instead of creating a new one"
+
+    outputs:
+      ts:
+        description: "Timestamp of the sent message for future updates"
+        value: ${{ jobs.notify.outputs.ts }}
+
     secrets:
       slack_bot_token:
         required: true
         description: "Access token for Slack"
 
-
 jobs:
   notify:
     runs-on: ubuntu-latest
+    outputs:
+      ts: ${{ steps.notify.outputs.ts }}
     steps:
+      - uses: actions/github-script@v6
+        id: template
+        env:
+          INPUT_STATUS: ${{ inputs.status }}
+          INPUT_UPDATE_TS: ${{ inputs.update_ts }}
+        with:
+          script: |
+            const deploy_status = process.env.INPUT_STATUS;
+            const update_ts = process.env.INPUT_UPDATE_TS;
+
+            var header = "";
+            var icon = "";
+
+            if (update_ts == "") {
+                header += "New ${{ inputs.service_name }} deploying... :crossed_fingers:";
+                icon = ":loading-mac:";
+            } else if (deploy_status == "success") {
+                header += "New ${{ inputs.service_name }} deployed :rocket:"
+                icon = ":white_check_mark:";
+            } else {
+                header += "${{ inputs.service_name }} deployment failed :boom:"
+                icon = ":x:";
+            }
+
+            return {
+                text: header,
+                blocks: [
+                    {
+                        type: "header",
+                        text: {
+                            type: "plain_text",
+                            text: header,
+                            emoji: true
+                        }
+                    },
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: "*Revision*\n${{ github.sha }}"
+                        }
+                    },
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: "*Docker image*\n${{ inputs.docker_image }}"
+                        }
+                    },
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: "*By*\n${{ github.actor }}"
+                        }
+                    },
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: "*Status*\n" + icon + " " + deploy_status
+                        }
+                    }
+                ]
+            };
+
       - uses: slackapi/slack-github-action@v1
+        id: notify
         with:
           channel-id: ${{ inputs.channels }}
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "header",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "New ${{ inputs.service_name }} deployed :rocket:",
-                    "emoji": true
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Revision*\n${{ github.sha }}"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*By*\n${{ github.actor }}"
-                  }
-                }
-              ]
-            }
+          update-ts: ${{ inputs.update_ts }}
+          payload: ${{ steps.template.outputs.result }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.slack_bot_token }}
