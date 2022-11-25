@@ -18,8 +18,8 @@ on:
         default: "C8VDK46Q4"
       status:
         type: string
-        required: false
-        description: "Deployment status; 'success' if all went well, anything else if an error occurred"
+        required: true
+        description: "Deployment status; 'running' if deployment is in progress, 'success' if all went well, anything else if an error occurred"
       update_ts:
         type: string
         required: false
@@ -54,7 +54,7 @@ jobs:
             var header = "";
             var icon = "";
 
-            if (update_ts == "") {
+            if (deploy_status == "running") {
                 header += "New ${{ inputs.service_name }} deploying... :crossed_fingers:";
                 icon = ":loading-mac:";
             } else if (deploy_status == "success") {
