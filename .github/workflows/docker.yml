@@ -31,6 +31,11 @@ on:
         default: .
         description: "Docker build context"
 
+      build-args:
+        type: string
+        required: false
+        description: "Docker build arguments"
+
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
@@ -86,14 +91,12 @@ jobs:
           tags: |
             type=sha
 
-      - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.context }}
           push: true
-          build-args: GO_VERSION=${{ env.GO_VERSION }}
+          build-args: ${{ inputs.build-args }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           ssh: default
