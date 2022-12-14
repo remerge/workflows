@@ -65,7 +65,7 @@ jobs:
         echo "stdout=$res" >> "$GITHUB_OUTPUT"
 
     - name: PR Comment
-      if: ${{ github.event_name == 'pull_request' && inputs.run_deploy }}
+      if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
       uses: actions/github-script@v2
       with:
         github-token: ${{secrets.github_token}}
@@ -76,3 +76,14 @@ jobs:
             repo: context.repo.repo,
             body: `Nomad Plan for ${{ inputs.cluster }} \n ${{ steps.nomad_plan.outputs.stdout }}`
           })
+
+    - name: Deploy to Nomad
+      if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+      env:
+        NOMAD_TOKEN: ${{ secrets.nomad_token }}
+        NOMAD_ADDR: ${{ inputs.api_url }}
+        NOMAD_VAR_task_image: ${{ inputs.image_name }}
+        NOMAD_VAR_cluster: ${{ inputs.cluster }}
+        NOMAD_VAR_environment: ${{ inputs.environment }}
+      run: |
+        nomad job run -var-file=${{ inputs.variables_file_name }} -detach ${{ inputs.config_file_name }}
