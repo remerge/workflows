@@ -34,6 +34,7 @@ on:
         required: true
         type: string
         description: Relative path to nomad_pack variable.
+        default: "nomad.hcl"
     secrets:
       nomad_token:
         required: false
