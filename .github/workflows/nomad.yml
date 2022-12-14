@@ -43,6 +43,7 @@ jobs:
   nomad:
     runs-on: [self-hosted, generic, nomad]
     steps:
+    - uses: actions/checkout@v3
     - name: Run Nomad Plan
       id: nomad_plan
       if: ${{ inputs.run_plan }}
