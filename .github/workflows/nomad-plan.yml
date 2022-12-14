@@ -2,10 +2,6 @@ name: Plan a deployment to Nomad Cluster
 on:
   workflow_call:
     inputs:
-      name:
-        required: true
-        type: string
-        description: The unique identifier of this deployed instance of the pack
       cluster:
         required: true
         type: string
@@ -51,11 +47,11 @@ jobs:
       id: nomad_plan
       if: ${{ inputs.run_plan }}
       env:
-        NOMAD_TOKEN: ${{ secrets[matrix.cluster_detail.api_key_name] }}
-        NOMAD_ADDR: ${{ matrix.cluster_detail.api_url }}
-        NOMAD_VAR_task_image: ${{ steps.meta.outputs.tags }}
-        NOMAD_VAR_cluster: ${{ matrix.cluster_detail.cluster }}
-        NOMAD_VAR_environment: ${{ matrix.cluster_detail.environment }}
+        NOMAD_TOKEN: ${{ secrets.nomad_token }}
+        NOMAD_ADDR: ${{ inputs.api_url }}
+        NOMAD_VAR_task_image: ${{ inputs.image_name }}
+        NOMAD_VAR_cluster: ${{ inputs.cluster }}
+        NOMAD_VAR_environment: ${{ inputs.environment }}
       run: |
         res=$(nomad plan ${{ inputs.config_file_name }} \
         -var-file=${{ inputs.variables_file_name }}) || ( [ $? -eq 1 ] && true)
