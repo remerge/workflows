@@ -53,7 +53,7 @@ jobs:
         NOMAD_VAR_cluster: ${{ inputs.cluster }}
         NOMAD_VAR_environment: ${{ inputs.environment }}
       run: |
-        res=$(nomad plan ${{ inputs.config_file_name }} \
+        res=$(nomad job plan ${{ inputs.config_file_name }} \
         -var-file=${{ inputs.variables_file_name }}) || ( [ $? -eq 1 ] && true)
 
         echo "${res}"
