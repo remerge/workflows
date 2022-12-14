@@ -31,7 +31,6 @@ on:
         type: string
         description: Relative path to nomad_pack variable.
       config_file_name:
-        required: true
         type: string
         description: Relative path to nomad_pack variable.
         default: "nomad.hcl"
