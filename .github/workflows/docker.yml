@@ -96,7 +96,11 @@ jobs:
         with:
           context: ${{ inputs.context }}
           push: true
-          build-args: ${{ inputs.build-args }}
+          build-args: |
+            ${{ inputs.build-args }}
+            CI_COMMIT=${{ github.sha }}
+            CI_REPO=${{ github.event.repository.name }}
+            CI_NUM=${{ github.run_id }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           ssh: default
