@@ -1,0 +1,96 @@
+name: Deploy Application to Nomad Cluster
+on:
+  workflow_call:
+    inputs:
+      cluster:
+        required: true
+        type: string
+        description: Nomad Cluster/Datacenter Name
+      environment:
+        required: true
+        type: string
+        description: Application environment to deploy
+      api_url:
+        required: true
+        type: string
+        description: Nomad cluster API address
+      image_name:
+        required: true
+        type: string
+        description: Docker image to deploy to cluster
+      run_plan:
+        type: boolean
+        description: Specify whether to plan nomad pack to cluster
+        default: true
+      run_deploy:
+        type: boolean
+        description: Specify whether to deploy nomad pack to cluster
+        default: false
+      variables_file_name:
+        type: string
+        description: Relative path to nomad_pack variable.
+        default: ""
+      config_file_name:
+        type: string
+        description: Relative path to nomad_pack variable.
+        default: "nomad.hcl"
+    secrets:
+      nomad_token:
+        required: false
+        description: "Nomad token for accessing Nomad cluster"
+
+jobs:
+  nomad:
+    runs-on: [self-hosted, generic, nomad]
+    steps:
+    - uses: actions/checkout@v3
+    - name: command args
+      env:
+        VAR_FILE: ${{ inputs.variables_file_name }}
+      run: |
+          if [ -n "$VAR_FILE" ]; then
+            echo "NOMAD_ARG=\"-var-file=${VAR_FILE}\"" >> "$GITHUB_ENV"
+          fi
+    - name: Run Nomad Plan
+      id: nomad_plan
+      if: ${{ inputs.run_plan }}
+      env:
+        NOMAD_TOKEN: ${{ secrets.nomad_token }}
+        NOMAD_ADDR: ${{ inputs.api_url }}
+        NOMAD_VAR_task_image: ${{ inputs.image_name }}
+        NOMAD_VAR_cluster: ${{ inputs.cluster }}
+        NOMAD_VAR_environment: ${{ inputs.environment }}
+      run: |
+        res=$(nomad job plan ${{ env.NOMAD_ARG }} \
+         ${{ inputs.config_file_name }}) || ( [ $? -eq 1 ] && true)
+
+        echo "${res}"
+        res="${res//'%'/'%25'}"
+        res="${res//$'\n'/'%0A'}"
+        res="${res//$'\r'/'%0D'}"
+
+        echo "stdout=$res" >> "$GITHUB_OUTPUT"
+
+    - name: PR Comment
+      if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.github_token}}
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Nomad Plan for ${{ inputs.cluster }} \n ${{ steps.nomad_plan.outputs.stdout }}`
+          })
+
+    - name: Deploy to Nomad
+      if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+      env:
+        NOMAD_TOKEN: ${{ secrets.nomad_token }}
+        NOMAD_ADDR: ${{ inputs.api_url }}
+        NOMAD_VAR_task_image: ${{ inputs.image_name }}
+        NOMAD_VAR_cluster: ${{ inputs.cluster }}
+        NOMAD_VAR_environment: ${{ inputs.environment }}
+      run: |
+        nomad job run ${{ env.NOMAD_ARG }} -detach ${{ inputs.config_file_name }}
