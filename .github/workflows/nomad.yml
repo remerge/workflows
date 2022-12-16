@@ -73,11 +73,11 @@ jobs:
 
     - name: PR Comment
       if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
-      uses: actions/github-script@v2
+      uses: actions/github-script@v6
       with:
         github-token: ${{secrets.github_token}}
         script: |
-          github.issues.createComment({
+          github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
