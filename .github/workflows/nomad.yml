@@ -27,9 +27,9 @@ on:
         description: Specify whether to deploy nomad pack to cluster
         default: false
       variables_file_name:
-        required: true
         type: string
         description: Relative path to nomad_pack variable.
+        default: ""
       config_file_name:
         type: string
         description: Relative path to nomad_pack variable.
@@ -44,6 +44,13 @@ jobs:
     runs-on: [self-hosted, generic, nomad]
     steps:
     - uses: actions/checkout@v3
+    - name: command args
+      env:
+        VAR_FILE: ${{ inputs.variables_file_name }}
+      run: |
+          if [ -n "$VAR_FILE" ]; then
+            echo "NOMAD_ARG=\"-var-file=${VAR_FILE}\"" >> "$GITHUB_ENV"
+          fi
     - name: Run Nomad Plan
       id: nomad_plan
       if: ${{ inputs.run_plan }}
@@ -54,7 +61,7 @@ jobs:
         NOMAD_VAR_cluster: ${{ inputs.cluster }}
         NOMAD_VAR_environment: ${{ inputs.environment }}
       run: |
-        res=$(nomad job plan  -var-file=${{ inputs.variables_file_name }} \
+        res=$(nomad job plan  $NOMAD_ARG \
          ${{ inputs.config_file_name }}) || ( [ $? -eq 1 ] && true)
 
         echo "${res}"
@@ -86,4 +93,4 @@ jobs:
         NOMAD_VAR_cluster: ${{ inputs.cluster }}
         NOMAD_VAR_environment: ${{ inputs.environment }}
       run: |
-        nomad job run -var-file=${{ inputs.variables_file_name }} -detach ${{ inputs.config_file_name }}
+        nomad job run $NOMAD_ARG -detach ${{ inputs.config_file_name }}
