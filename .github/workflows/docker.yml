@@ -85,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - if: ${{ inputs.gen-cache-key != "" && inputs.gen-cache-path != "" }}
+      - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
         uses: actions/cache@v3
         with:
           key: ${{ inputs.gen-cache-key}}
