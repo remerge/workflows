@@ -25,6 +25,11 @@ on:
         required: true
         description: "Image name"
 
+      tag:
+        type: string
+        required: false
+        description: "Version tag"
+
       context:
         type: string
         required: false
@@ -96,6 +101,7 @@ jobs:
           images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
           tags: |
             type=sha
+            ${{ inputs.tag }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
