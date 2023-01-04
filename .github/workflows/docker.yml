@@ -58,7 +58,7 @@ on:
         type: string
         required: false
 
-      gen-cache-dir:
+      gen-cache-path:
         description: "Cached directory where previous steps generated files"
         type: string
         required: false
@@ -85,12 +85,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - if: ${{ inputs.gen-cache-key != "" && inputs.gen-cache-dir != "" }}
+      - if: ${{ inputs.gen-cache-key != "" && inputs.gen-cache-path != "" }}
         uses: actions/cache@v3
         with:
           key: ${{ inputs.gen-cache-key}}
           path: |
-            ${{ inputs.gen-cache-dir}}
+            ${{ inputs.gen-cache-path}}
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.6.0
