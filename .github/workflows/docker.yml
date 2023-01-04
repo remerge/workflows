@@ -53,6 +53,16 @@ on:
         default: ubuntu-latest
         required: false
 
+      gen-cache-key:
+        description: "Key of a cache where previous steps generated files"
+        type: string
+        required: false
+
+      gen-cache-dir:
+        description: "Cached directory where previous steps generated files"
+        type: string
+        required: false
+
     outputs:
       image:
         description: "Full path of produced image"
@@ -74,6 +84,13 @@ jobs:
       image: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v3
+
+      - if: ${{ inputs.gen-cache-key != "" && inputs.gen-cache-dir != "" }}
+        uses: actions/cache@v3
+        with:
+          key: ${{ inputs.gen-cache-key}}
+          path: |
+            ${{ inputs.gen-cache-dir}}
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.6.0
