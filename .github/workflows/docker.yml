@@ -25,11 +25,22 @@ on:
         required: true
         description: "Image name"
 
+      tag:
+        type: string
+        required: false
+        description: "Version tag"
+
       context:
         type: string
         required: false
         default: .
         description: "Docker build context"
+
+      dockerfile:
+        type: string
+        required: false
+        default: Dockerfile
+        description: "Dockerfile"
 
       build-args:
         type: string
@@ -40,6 +51,16 @@ on:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
         default: ubuntu-latest
+        required: false
+
+      gen-cache-key:
+        description: "Key of a cache where previous steps generated files"
+        type: string
+        required: false
+
+      gen-cache-path:
+        description: "Cached directory where previous steps generated files"
+        type: string
         required: false
 
     outputs:
@@ -63,6 +84,13 @@ jobs:
       image: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v3
+
+      - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
+        uses: actions/cache@v3
+        with:
+          key: ${{ inputs.gen-cache-key}}
+          path: |
+            ${{ inputs.gen-cache-path}}
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.6.0
@@ -90,12 +118,14 @@ jobs:
           images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
           tags: |
             type=sha
+            ${{ inputs.tag }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.context }}
           push: true
+          file: ${{ inputs.dockerfile }}
           build-args: |
             ${{ inputs.build-args }}
             CI_COMMIT=${{ github.sha }}
