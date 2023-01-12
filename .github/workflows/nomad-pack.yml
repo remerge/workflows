@@ -78,7 +78,7 @@ jobs:
       run: |
         res=$(nomad-pack plan ${{ inputs.pack_name }} \
         --var='task_image=${{ inputs.image_name }}' \
-        --var='cluster=${{ inputs.cluster }}' \
+        --var='cluster=${{ inputs.cluster }}' --region='${{ inputs.cluster }}' \
         --var='environment=${{ inputs.environment }}' \
         --var-file=${{ inputs.variables_file_name }} \
         --name=${{ inputs.name }} --registry=remerge-pack  \
@@ -116,7 +116,7 @@ jobs:
       run: |
         nomad-pack run ${{ inputs.pack_name }} \
         --var='task_image=${{ inputs.image_name }}' \
-        --var='cluster=${{ inputs.cluster }}' \
+        --var='cluster=${{ inputs.cluster }}' --region='${{ inputs.cluster }}' \
         --var='environment=${{ inputs.environment }}' \
         --var-file=${{ inputs.variables_file_name }} \
         --name=${{ inputs.name }} --registry=remerge-pack
