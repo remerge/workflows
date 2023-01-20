@@ -53,6 +53,7 @@ on:
 jobs:
   nomad:
     runs-on: [self-hosted, generic, nomad]
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v3
       - name: Setup SSH
