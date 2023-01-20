@@ -75,6 +75,8 @@ jobs:
       env:
         NOMAD_TOKEN: ${{ secrets.nomad_token }}
         NOMAD_ADDR: ${{ inputs.api_url }}
+      # continue on error; default is `bash -e {0}`
+      shell: bash {0}
       run: |
         res=$(nomad-pack plan ${{ inputs.pack_name }} \
         --var='task_image=${{ inputs.image_name }}' \
@@ -83,6 +85,9 @@ jobs:
         --var-file=${{ inputs.variables_file_name }} \
         --name=${{ inputs.name }} --registry=remerge-pack  \
         --exit-code-makes-changes=0)
+
+        # save exit code for later
+        ret=$?
 
         echo "${res}"
         res="${res//'%'/'%25'}"
@@ -94,6 +99,9 @@ jobs:
           echo "${res}"
           echo "EOF"
         } >> "${GITHUB_OUTPUT}"
+
+        # let the next step know how everything went
+        exit ${ret}
 
     - name: PR Comment
       if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
