@@ -60,7 +60,6 @@ jobs:
     with:
       cluster: ${{ inputs.cluster }}
       status: running
-      channels: D02U7F64NMP
     secrets:
       slack_bot_token: ${{ secrets.slack_bot_token }}
 
@@ -149,7 +148,6 @@ jobs:
     with:
       cluster: ${{ inputs.cluster }}
       status: ${{ needs.nomad.result }}
-      channels: D02U7F64NMP
       update_ts: ${{ needs.slack-notify-start.outputs.ts }}
     secrets:
       slack_bot_token: ${{ secrets.slack_bot_token }}
