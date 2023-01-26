@@ -121,7 +121,7 @@ jobs:
                         type: "section",
                         text: {
                             type: "mrkdwn",
-                            text: "*Status*
+                            text: "*Status*"
                         }
                     }
                 ]
