@@ -61,10 +61,10 @@ jobs:
             var icon = "";
 
             if (deploy_status == "running") {
-                header += "Deploying ${{ inputs.service_name }} to ${{ inputs.service_name }} :crossed_fingers:";
+                header += "Deploying ${{ inputs.service_name }}... :crossed_fingers:";
                 icon = ":loading-mac:";
             } else if (deploy_status == "success") {
-                header += "New ${{ inputs.service_name }} deployed :rocket:"
+                header += "${{ inputs.service_name }} deployed successfully :rocket:"
                 icon = ":white_check_mark:";
             } else {
                 header += "${{ inputs.service_name }} deployment failed :boom:"
@@ -121,7 +121,7 @@ jobs:
                         type: "section",
                         text: {
                             type: "mrkdwn",
-                            text: "*Status*\n" + icon + " " + deploy_status
+                            text: "*Status*
                         }
                     }
                 ]
