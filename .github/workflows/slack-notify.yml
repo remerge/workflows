@@ -74,7 +74,7 @@ jobs:
                             type: "section",
                             text: {
                                 type: "mrkdwn",
-                                text: "<http://nomad.service.${{ inputs.cluster }}.consul:4646/ui/jobs/nomad-sample@default|`${{ inputs.cluster }}`> " + icon
+                                text: "<http://nomad.service.${{ inputs.cluster }}.consul:4646/ui/jobs/${{ github.event.repository.name }}@default|`${{ inputs.cluster }}`> " + icon
                             }
                         }
                     ]
