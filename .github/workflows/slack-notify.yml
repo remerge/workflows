@@ -5,21 +5,21 @@ on:
     inputs:
       service_name:
         type: string
-        required: true
+        required: false
         description: "Human-readable name of the deployed service"
-      docker_image:
+      cluster:
+        type: string
+        required: false
+        description: "Cluster name; if this is given, only a short message with the status of that cluster will be sent"
+      status:
         type: string
         required: true
-        description: "Docker image name"
+        description: "Deployment status; 'running' if deployment is in progress, 'success' if all went well, anything else if an error occurred"
       channels:
         type: string
         required: false
         description: "Comma-delimited list of Slack channels ID where the notification should be posted"
         default: "C8VDK46Q4"
-      status:
-        type: string
-        required: true
-        description: "Deployment status; 'running' if deployment is in progress, 'success' if all went well, anything else if an error occurred"
       update_ts:
         type: string
         required: false
@@ -44,10 +44,12 @@ jobs:
       - uses: actions/github-script@v6
         id: template
         env:
+          INPUT_CLUSTER: ${{ inputs.cluster }}
           INPUT_STATUS: ${{ inputs.status }}
           INPUT_UPDATE_TS: ${{ inputs.update_ts }}
         with:
           script: |
+            const cluster = process.env.INPUT_CLUSTER;
             const deploy_status = process.env.INPUT_STATUS;
             const update_ts = process.env.INPUT_UPDATE_TS;
 
@@ -55,14 +57,28 @@ jobs:
             var icon = "";
 
             if (deploy_status == "running") {
-                header += "New ${{ inputs.service_name }} deploying... :crossed_fingers:";
+                header += "${{ inputs.service_name }} deploying... :crossed_fingers:";
                 icon = ":loading-mac:";
             } else if (deploy_status == "success") {
-                header += "New ${{ inputs.service_name }} deployed :rocket:"
+                header += "${{ inputs.service_name }} deployed successfully :rocket:"
                 icon = ":white_check_mark:";
             } else {
                 header += "${{ inputs.service_name }} deployment failed :boom:"
                 icon = ":x:";
+            }
+
+            if (cluster) {
+                return {
+                    blocks: [
+                        {
+                            type: "section",
+                            text: {
+                                type: "mrkdwn",
+                                text: "<http://nomad.service.${{ inputs.cluster }}.consul:4646/ui/jobs/${{ github.event.repository.name }}@default|`${{ inputs.cluster }}`> " + icon
+                            }
+                        }
+                    ]
+                };
             }
 
             return {
@@ -80,14 +96,7 @@ jobs:
                         type: "section",
                         text: {
                             type: "mrkdwn",
-                            text: "*Revision*\n${{ github.sha }}"
-                        }
-                    },
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: "*Docker image*\n${{ inputs.docker_image }}"
+                            text: "*Revision*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
                         }
                     },
                     {
@@ -101,7 +110,7 @@ jobs:
                         type: "section",
                         text: {
                             type: "mrkdwn",
-                            text: "*Status*\n" + icon + " " + deploy_status
+                            text: "*Status*"
                         }
                     }
                 ]

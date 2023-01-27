@@ -50,7 +50,19 @@ on:
       ssh_key:
         description: "SSH key to use"
         required: true
+      slack_bot_token:
+        required: true
+        description: "Access token for Slack"
+
 jobs:
+  slack-notify-start:
+    uses: remerge/workflows/.github/workflows/slack-notify.yml@SRE-329-make-slack-deploy-notifications-less-flashy
+    with:
+      cluster: ${{ inputs.cluster }}
+      status: running
+    secrets:
+      slack_bot_token: ${{ secrets.slack_bot_token }}
+
   nomad:
     runs-on: [self-hosted, generic, nomad]
     steps:
@@ -128,3 +140,14 @@ jobs:
           --var='environment=${{ inputs.environment }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack
+
+  slack-notify-finish:
+    if: ${{ always() && needs.nomad.result != 'skipped' }}
+    needs: [nomad, slack-notify-start]
+    uses: remerge/workflows/.github/workflows/slack-notify.yml@SRE-329-make-slack-deploy-notifications-less-flashy
+    with:
+      cluster: ${{ inputs.cluster }}
+      status: ${{ needs.nomad.result }}
+      update_ts: ${{ needs.slack-notify-start.outputs.ts }}
+    secrets:
+      slack_bot_token: ${{ secrets.slack_bot_token }}
