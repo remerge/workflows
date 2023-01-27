@@ -96,21 +96,7 @@ jobs:
                         type: "section",
                         text: {
                             type: "mrkdwn",
-                            text: "*Revision*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
-                        }
-                    },
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: "*By*\n${{ github.actor }}"
-                        }
-                    },
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: "*Status*"
+                            text: "${{ github.actor }} pushed <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
                         }
                     }
                 ]
