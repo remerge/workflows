@@ -96,7 +96,7 @@ jobs:
                         type: "section",
                         text: {
                             type: "mrkdwn",
-                            text: "*Revision*\n${{ github.sha }}"
+                            text: "*Revision*\n<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
                         }
                     },
                     {
