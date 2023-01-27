@@ -56,7 +56,7 @@ on:
 
 jobs:
   slack-notify-start:
-    uses: remerge/workflows/.github/workflows/slack-notify.yml@SRE-329-make-slack-deploy-notifications-less-flashy
+    uses: remerge/workflows/.github/workflows/slack-notify.yml@main
     with:
       cluster: ${{ inputs.cluster }}
       status: running
@@ -144,7 +144,7 @@ jobs:
   slack-notify-finish:
     if: ${{ always() && needs.nomad.result != 'skipped' }}
     needs: [nomad, slack-notify-start]
-    uses: remerge/workflows/.github/workflows/slack-notify.yml@SRE-329-make-slack-deploy-notifications-less-flashy
+    uses: remerge/workflows/.github/workflows/slack-notify.yml@main
     with:
       cluster: ${{ inputs.cluster }}
       status: ${{ needs.nomad.result }}
