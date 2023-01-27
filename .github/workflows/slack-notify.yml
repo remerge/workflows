@@ -57,7 +57,7 @@ jobs:
             var icon = "";
 
             if (deploy_status == "running") {
-                header += "Deploying ${{ inputs.service_name }}... :crossed_fingers:";
+                header += "${{ inputs.service_name }} deploying... :crossed_fingers:";
                 icon = ":loading-mac:";
             } else if (deploy_status == "success") {
                 header += "${{ inputs.service_name }} deployed successfully :rocket:"
