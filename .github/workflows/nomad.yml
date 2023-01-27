@@ -38,8 +38,19 @@ on:
       nomad_token:
         required: false
         description: "Nomad token for accessing Nomad cluster"
+      slack_bot_token:
+        required: true
+        description: "Access token for Slack"
 
 jobs:
+  slack-notify-start:
+    uses: remerge/workflows/.github/workflows/slack-notify.yml@main
+    with:
+      cluster: ${{ inputs.cluster }}
+      status: running
+    secrets:
+      slack_bot_token: ${{ secrets.slack_bot_token }}
+
   nomad:
     runs-on: [self-hosted, generic, nomad]
     steps:
@@ -94,3 +105,14 @@ jobs:
           NOMAD_VAR_environment: ${{ inputs.environment }}
         run: |
           nomad job run ${{ env.NOMAD_ARG }} -detach ${{ inputs.config_file_name }}
+
+  slack-notify-finish:
+    if: ${{ always() && needs.nomad.result != 'skipped' }}
+    needs: [nomad, slack-notify-start]
+    uses: remerge/workflows/.github/workflows/slack-notify.yml@main
+    with:
+      cluster: ${{ inputs.cluster }}
+      status: ${{ needs.nomad.result }}
+      update_ts: ${{ needs.slack-notify-start.outputs.ts }}
+    secrets:
+      slack_bot_token: ${{ secrets.slack_bot_token }}
