@@ -7,10 +7,6 @@ on:
         type: string
         required: false
         description: "Human-readable name of the deployed service"
-      docker_image:
-        type: string
-        required: false
-        description: "Docker image name"
       cluster:
         type: string
         required: false
@@ -101,13 +97,6 @@ jobs:
                         text: {
                             type: "mrkdwn",
                             text: "*Revision*\n${{ github.sha }}"
-                        }
-                    },
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: "*Docker image*\n${{ inputs.docker_image }}"
                         }
                     },
                     {
