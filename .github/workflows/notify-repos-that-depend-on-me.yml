@@ -41,14 +41,6 @@ jobs:
         app_id: ${{ secrets.app_id }}
         private_key: ${{ secrets.app_key }}
 
-        # Optional (defaults to all the Github App permissions).
-        # Using a YAML multiline string to avoid escaping the JSON quotes.
-        # permissions: >-
-        #   {"members": "read"}
-
-        # Optional (defaults to the current repository).
-        # repository: "owner/repo"
-
     - name: Dispatch Event
       uses: peter-evans/repository-dispatch@v2
       with:
