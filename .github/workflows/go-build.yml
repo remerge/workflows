@@ -17,7 +17,12 @@ on:
         description: "Git branches eligible to build"
         type: string
         required: false
-        default: 'master production main'
+        default: 'production'
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     outputs:
       artifact:
         description: 'Binary output artifact'
@@ -30,7 +35,7 @@ on:
 jobs:
   go-app:
     if: ${{ contains(inputs.branches, github.head_ref || github.ref_name) }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
       REPONAME: ${{ github.event.repository.name }}
@@ -38,7 +43,7 @@ jobs:
       artifact: '${{ github.event.repository.name }}.linux.amd64'
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/cache@v3
       with:
         path: |
@@ -52,7 +57,7 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - uses: webfactory/ssh-agent@v0.5.0
+    - uses: webfactory/ssh-agent@v0.6.0
       with:
         ssh-private-key: '${{ secrets.ssh_key }}'
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'

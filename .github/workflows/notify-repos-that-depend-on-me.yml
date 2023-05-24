@@ -11,6 +11,11 @@ on:
         type: string
         required: true
         description: "Github username we should assign the PRs to"
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       app_id:
         required: true
@@ -24,7 +29,7 @@ jobs:
     strategy:
       matrix:
         dependant: ${{ fromJSON(inputs.dependants) }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     steps:
     - run: echo ${{ matrix.dependant }}
       shell: bash

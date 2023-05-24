@@ -1,0 +1,148 @@
+name: Docker build and push to GAR
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        type: string
+        required: false
+        default: "europe-west4-docker.pkg.dev"
+        description: "Google Artifact registry"
+
+      project:
+        type: string
+        required: false
+        default: "artifact-registry-ff9b"
+        description: "GCP project"
+
+      repo:
+        type: string
+        required: true
+        description: "GCP project repository"
+
+      image:
+        type: string
+        required: true
+        description: "Image name"
+
+      tag:
+        type: string
+        required: false
+        description: "Version tag"
+
+      context:
+        type: string
+        required: false
+        default: .
+        description: "Docker build context"
+
+      dockerfile:
+        type: string
+        required: false
+        default: Dockerfile
+        description: "Dockerfile"
+
+      build-args:
+        type: string
+        required: false
+        description: "Docker build arguments"
+
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
+
+      gen-cache-key:
+        description: |
+          "Key of a cache where previous steps generated files. If your project
+          needs to generate files before building the Docker image, this has to
+          be done in a job before calling this reusable workflow. This is a limit
+          of GHA, as reusable workflows can't run as a step in a job, but always
+          run as their own job. To share data between jobs, `actions/cache@v3`
+          should be used to create a cache. This workflow can then access the cache
+          and hence the generated files."
+        type: string
+        required: false
+
+      gen-cache-path:
+        description: |
+          "Cached directory where previous steps generated files. This is to be
+          provided in conjunction with `gen-cache-key` and tells this workflow
+          which directory to mount the cache to."
+        type: string
+        required: false
+
+    outputs:
+      image:
+        description: "Full path of produced image"
+        value: ${{ jobs.build-and-push.outputs.image }}
+
+    secrets:
+      deploy_user_ssh_key:
+        required: true
+        description: "Private key for deploy user to access private repos"
+
+      gar_service_account_key:
+        required: true
+        description: "Google Artifact Registry service account key (JSON)"
+
+jobs:
+  build-and-push:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
+        uses: actions/cache@v3
+        with:
+          key: ${{ inputs.gen-cache-key}}
+          path: |
+            ${{ inputs.gen-cache-path}}
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Authenticate with Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.gar_service_account_key }}
+
+      - name: Sign in to Google Artifact Registry
+        run: |
+          docker login -u _json_key \
+          --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
+          tags: |
+            type=sha
+            ${{ inputs.tag }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ inputs.context }}
+          push: true
+          file: ${{ inputs.dockerfile }}
+          build-args: |
+            ${{ inputs.build-args }}
+            CI_COMMIT=${{ github.sha }}
+            CI_REPO=${{ github.event.repository.name }}
+            CI_NUM=${{ github.run_id }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          ssh: default
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

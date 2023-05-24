@@ -1,4 +1,4 @@
-name: Model release DAG update
+name: "[DEPRECATED] Model release DAG update"
 
 on:
   workflow_call:
@@ -8,6 +8,11 @@ on:
           Schedule interval for the model release. For syntax, check https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html#cron-presets
         type: string
         required: true
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       ssh_key:
         description: |
@@ -30,7 +35,7 @@ on:
 jobs:
   model-update-production-dag:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/') # Can only be triggered on tags
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.os }}
     name: Update model's production DAG
     env:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.google_service_account_json }}
@@ -64,7 +69,7 @@ jobs:
           username: _json_key
           password: ${{ secrets.google_service_account_json }}
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.0
+        uses: webfactory/ssh-agent@v0.6.0
         with:
           ssh-private-key: |
             ${{ secrets.ssh_key }}
@@ -81,7 +86,7 @@ jobs:
         run: pipx install mlem
       - name: Schedule the DAG # to be updated with the _actual_ schedule command, once it works
         run: |
-          mlem -vvvv schedule --interval '${{ inputs.schedule_interval }}' --suffix "production.latest_release"
+          mlem -vvvv schedule pipeline --interval '${{ inputs.schedule_interval }}' --suffix "production.latest_release"
       - name: Remove Google Authentication JSON
         if: always()
         run: |
