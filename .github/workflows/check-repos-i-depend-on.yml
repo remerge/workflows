@@ -33,10 +33,24 @@ on:
         required: true
 
 jobs:
+  prepare-dependencies:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      dependencies: ${{ steps.prepare.outputs.dependencies }}
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Prepare dependencies
+      id: prepare
+      run: |
+        DEPS=$(awk '/require \(/{flag=1;next}/\)/{flag=0}flag' go.mod | grep "github.com/remerge/" | grep -v "indirect" | awk -F'/' '{print $NF}' | awk '{print $1}' | jq -R . | jq -s .)
+        echo "dependencies=$DEPS" >> "$GITHUB_OUTPUT"
   notify-self-about-all-dependencies:
+    needs: prepare-dependencies
     strategy:
       matrix:
-        dependency: ${{ fromJSON(inputs.dependencies) }}
+        dependency: ${{ fromJSON(needs.prepare-dependencies.outputs.dependencies) }}
     runs-on: ${{ inputs.os }}
     steps:
     - run: echo ${{ matrix.dependency }}
