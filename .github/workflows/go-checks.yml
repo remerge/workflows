@@ -103,6 +103,7 @@ jobs:
       if: "${{ inputs.goprivate != '' }}"
 
     - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+      if: "${{ inputs.goprivate != '' }}"
 
     - run: make ${{ inputs.lint-target }}
     - run: make gen && git diff --exit-code --name-only HEAD
