@@ -40,8 +40,11 @@ jobs:
     - name: Prepare dependencies
       id: prepare
       run: |
+        DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
         DEPS=$(awk '/require \(/{flag=1;next}/\)/{flag=0}flag' go.mod | grep "github.com/remerge/" | grep -v "indirect" | awk -F'/' '{print $NF}' | awk '{print $1}' | jq -R . | jq -s .)
-        echo "dependencies=$DEPS" >> "$GITHUB_OUTPUT"
+        echo "dependencies<<$DELIMITER" >> "$GITHUB_OUTPUT"
+        echo "$DEPS" >> "$GITHUB_OUTPUT"
+        echo "$DELIMITER" >> "$GITHUB_OUTPUT"
   notify-self-about-all-dependencies:
     needs: prepare-dependencies
     strategy:
