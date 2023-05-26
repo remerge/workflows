@@ -8,10 +8,6 @@ name: Check repos I depend on
 on:
   workflow_call:
     inputs:
-      dependencies:
-        type: string
-        required: true
-        description: "String containing a JSON list (because we can't pass a list as an input)"
       assign_to:
         type: string
         required: true
