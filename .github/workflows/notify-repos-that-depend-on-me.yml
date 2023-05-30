@@ -84,7 +84,7 @@ jobs:
     - name: Dispatch Event
       uses: peter-evans/repository-dispatch@v2
       with:
-        token: ${{ needs.prepare-dependants.outputs.token }}
+        token: ${{ fromJSON(needs.prepare-dependants.outputs.token) }}
         repository: remerge/${{ matrix.dependant }}
         event-type: possible-dependency-update
         client-payload: |
