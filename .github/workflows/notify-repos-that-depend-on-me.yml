@@ -3,10 +3,6 @@ name: Notify repos that depend on me
 on:
   workflow_call:
     inputs:
-      dependants:
-        type: string
-        required: true
-        description: "String containing a JSON list (because we can't pass a list as an input)"
       assign_to:
         type: string
         required: true
@@ -16,6 +12,11 @@ on:
         type: string
         default: ubuntu-latest
         required: false
+      golang_version:
+        description: "Override Go version in go.mod"
+        type: string
+        required: false
+        default: ""
     secrets:
       app_id:
         required: true
@@ -25,26 +26,56 @@ on:
         required: true
 
 jobs:
+  prepare-dependants:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      dependants: ${{ steps.prepare.outputs.dependants }}
+      token: ${{ steps.generate_app_token.outputs.token }}
+
+    steps:
+      - name: Use our App Key and App ID to get an App Token
+        id: generate_app_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ secrets.app_id }}
+          private_key: ${{ secrets.app_key }}
+  
+      - name: Check out code
+        uses: actions/checkout@v3
+  
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+  
+      - name: Prepare dependants
+        id: prepare
+        run: |
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          DEPENDANTS=$(go run ./scripts/get_dependants.go)
+          {
+            echo "dependants<<$DELIMITER"
+            echo "$DEPENDANTS"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
+        env:
+          REPONAME: ${{ github.repository }}
+          APP_TOKEN: ${{ steps.generate_app_token.outputs.token }}
+
   notify-all-dependants:
+    needs: prepare-dependants
     strategy:
       matrix:
-        dependant: ${{ fromJSON(inputs.dependants) }}
+        dependant: ${{ fromJSON(needs.prepare-dependants.outputs.dependants) }}
     runs-on: ${{ inputs.os }}
     steps:
     - run: echo ${{ matrix.dependant }}
       shell: bash
 
-    - name: Use our App Key and App ID to get an App Token
-      id: generate_app_token
-      uses: tibdex/github-app-token@v1
-      with:
-        app_id: ${{ secrets.app_id }}
-        private_key: ${{ secrets.app_key }}
-
     - name: Dispatch Event
       uses: peter-evans/repository-dispatch@v2
       with:
-        token: ${{ steps.generate_app_token.outputs.token }}
+        token: ${{ needs.prepare-dependants.outputs.token }}
         repository: remerge/${{ matrix.dependant }}
         event-type: possible-dependency-update
         client-payload: |
