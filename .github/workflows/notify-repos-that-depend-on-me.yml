@@ -42,7 +42,14 @@ jobs:
   
       - name: Check out code
         uses: actions/checkout@v3
-  
+
+      - name: Check out scripts
+        uses: actions/checkout@v3
+        with:
+          repository: remerge/workflows
+          path: workflow-scripts
+          ref: aidC1SAL/6143-fully-automate-depupdater
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -52,7 +59,7 @@ jobs:
         id: prepare
         run: |
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          DEPENDANTS=$(go run ./scripts/get_dependants.go)
+          DEPENDANTS=$(go run ./workflow-scripts/scripts/get_dependants.go)
           {
             echo "dependants<<$DELIMITER"
             echo "$DEPENDANTS"
