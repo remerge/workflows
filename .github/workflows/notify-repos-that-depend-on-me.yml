@@ -30,8 +30,6 @@ jobs:
     runs-on: ${{ inputs.os }}
     outputs:
       dependants: ${{ steps.prepare.outputs.dependants }}
-      token: ${{ steps.generate_app_token.outputs.token }}
-
     steps:
       - name: Use our App Key and App ID to get an App Token
         id: generate_app_token
@@ -39,7 +37,7 @@ jobs:
         with:
           app_id: ${{ secrets.app_id }}
           private_key: ${{ secrets.app_key }}
-  
+
       - name: Check out code
         uses: actions/checkout@v3
 
@@ -81,10 +79,17 @@ jobs:
     - run: echo ${{ matrix.dependant }}
       shell: bash
 
+    - name: Use our App Key and App ID to get an App Token
+      id: generate_app_token
+      uses: tibdex/github-app-token@v1
+      with:
+        app_id: ${{ secrets.app_id }}
+        private_key: ${{ secrets.app_key }}
+
     - name: Dispatch Event
       uses: peter-evans/repository-dispatch@v2
       with:
-        token: ${{ fromJSON(needs.prepare-dependants.outputs.token) }}
+        token: ${{ steps.generate_app_token.outputs.token }}
         repository: remerge/${{ matrix.dependant }}
         event-type: possible-dependency-update
         client-payload: |
