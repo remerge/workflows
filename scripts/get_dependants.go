@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/v52/github"
 	"golang.org/x/oauth2"
@@ -34,6 +35,7 @@ func main() {
 	query := fmt.Sprintf("org:remerge filename:go.mod github.com/%s", repoName)
 	searchOptions := &github.SearchOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
+		TextMatch:   true,
 	}
 
 	dependants := []string{}
@@ -46,7 +48,15 @@ func main() {
 		}
 
 		for _, file := range result.CodeResults {
-			dependants = append(dependants, *file.Repository.Name)
+			for _, match := range file.TextMatches {
+				lines := strings.Split(*match.Fragment, "\n")
+				for _, line := range lines {
+					// exclude indirect dependencies
+					if strings.Contains(line, fmt.Sprintf("github.com/%s", repoName)) && !strings.Contains(line, "// indirect") {
+						dependants = append(dependants, *file.Repository.Name)
+					}
+				}
+			}
 		}
 
 		if response.NextPage == 0 {
