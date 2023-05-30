@@ -11,15 +11,26 @@ import (
 )
 
 func main() {
+	token := os.Getenv("APP_TOKEN")
+	if token == "" {
+		fmt.Println("APP_TOKEN is not set")
+		return
+	}
+
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: os.Getenv("APP_TOKEN")},
+		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
 
 	repoName := os.Getenv("REPONAME")
+	if repoName == "" {
+		fmt.Println("REPONAME is not set")
+		return
+	}
+
 	query := fmt.Sprintf("org:remerge filename:go.mod github.com/%s", repoName)
 	searchOptions := &github.SearchOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
