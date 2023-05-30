@@ -32,7 +32,8 @@ func main() {
 		return
 	}
 
-	query := fmt.Sprintf("org:remerge filename:go.mod github.com/%s", repoName)
+	searchTerm := fmt.Sprintf("github.com/%s", repoName)
+	query := fmt.Sprintf("org:remerge filename:go.mod %s", searchTerm)
 	searchOptions := &github.SearchOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 		TextMatch:   true,
@@ -51,8 +52,8 @@ func main() {
 			for _, match := range file.TextMatches {
 				lines := strings.Split(*match.Fragment, "\n")
 				for _, line := range lines {
-					// exclude indirect dependencies
-					if strings.Contains(line, fmt.Sprintf("github.com/%s", repoName)) && !strings.Contains(line, "// indirect") {
+					// exclude reference to self and any indirect dependencies
+					if strings.Contains(line, searchTerm) && !strings.Contains(line, fmt.Sprintf("module %s", searchTerm)) && !strings.Contains(line, "// indirect") {
 						dependants = append(dependants, *file.Repository.Name)
 					}
 				}
