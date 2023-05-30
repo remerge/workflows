@@ -59,7 +59,9 @@ jobs:
         id: prepare
         run: |
           DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          DEPENDANTS=$(go run ./workflow-scripts/scripts/get_dependants.go)
+          cd workflow-scripts
+          go mod download
+          DEPENDANTS=$(go run scripts/get_dependants.go)
           {
             echo "dependants<<$DELIMITER"
             echo "$DEPENDANTS"
