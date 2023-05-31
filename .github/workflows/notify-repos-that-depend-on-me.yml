@@ -46,7 +46,6 @@ jobs:
         with:
           repository: remerge/workflows
           path: workflow-scripts
-          ref: aidC1SAL/6143-fully-automate-depupdater
 
       - name: Set up Go
         uses: actions/setup-go@v2
