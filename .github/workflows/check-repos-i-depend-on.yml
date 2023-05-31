@@ -39,6 +39,14 @@ jobs:
     outputs:
       dependencies: ${{ steps.prepare.outputs.dependencies }}
     steps:
+    - name: Set up SSH agent
+      uses: webfactory/ssh-agent@v0.6.0
+      with:
+        ssh-private-key: ${{ secrets.ssh_key }}
+
+    - name: Set global git config
+      run: git config --global url.git@github.com:.insteadof https://github.com/
+
     - name: Check out code
       uses: actions/checkout@v3
     
@@ -57,6 +65,7 @@ jobs:
           echo "$DEPS"
           echo "$DELIMITER"
         } >> "$GITHUB_OUTPUT"
+
   notify-self-about-all-dependencies:
     needs: prepare-dependencies
     strategy:
