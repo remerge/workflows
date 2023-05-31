@@ -8,10 +8,6 @@ name: Check repos I depend on
 on:
   workflow_call:
     inputs:
-      dependencies:
-        type: string
-        required: true
-        description: "String containing a JSON list (because we can't pass a list as an input)"
       assign_to:
         type: string
         required: true
@@ -21,6 +17,11 @@ on:
         type: string
         default: ubuntu-latest
         required: false
+      golang_version:
+        description: "Override Go version in go.mod"
+        type: string
+        required: false
+        default: ""
     secrets:
       app_id:
         required: true
@@ -33,10 +34,43 @@ on:
         required: true
 
 jobs:
+  prepare-dependencies:
+    runs-on: ${{ inputs.os }}
+    outputs:
+      dependencies: ${{ steps.prepare.outputs.dependencies }}
+    steps:
+    - name: Set up SSH agent
+      uses: webfactory/ssh-agent@v0.6.0
+      with:
+        ssh-private-key: ${{ secrets.ssh_key }}
+
+    - name: Set global git config
+      run: git config --global url.git@github.com:.insteadof https://github.com/
+
+    - name: Check out code
+      uses: actions/checkout@v3
+    
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+
+    - name: Prepare dependencies
+      id: prepare
+      run: |
+        DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        DEPS=$(go list -m -f '{{if not .Indirect}}{{if not .Main}}{{.Path}}{{end}}{{end}}' all | grep "github.com/remerge/" | awk -F'/' '{print $NF}' | awk '{print $1}' | jq -R . | jq -s .)
+        {
+          echo "dependencies<<$DELIMITER"
+          echo "$DEPS"
+          echo "$DELIMITER"
+        } >> "$GITHUB_OUTPUT"
+
   notify-self-about-all-dependencies:
+    needs: prepare-dependencies
     strategy:
       matrix:
-        dependency: ${{ fromJSON(inputs.dependencies) }}
+        dependency: ${{ fromJSON(needs.prepare-dependencies.outputs.dependencies) }}
     runs-on: ${{ inputs.os }}
     steps:
     - run: echo ${{ matrix.dependency }}
