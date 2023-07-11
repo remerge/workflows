@@ -103,6 +103,7 @@ jobs:
           environment: ${{ inputs.environment }}
 
       - name: Deploy to Nomad
+        id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         env:
           NOMAD_TOKEN: ${{ secrets.nomad_token }}
@@ -120,7 +121,7 @@ jobs:
           token: "${{ github.token }}"
           environment-url: ${{ steps.deployment.outputs.environment_url }}
           deployment-id: ${{ steps.deployment.outputs.deployment_id }}
-          state: "${{ success() && failure() != true ? 'success' : 'failure' }}"
+          state: "${{ steps.nomad_deployment.outcome }}"
 
   slack-notify-finish:
     if: ${{ always() && needs.nomad.result != 'skipped' }}
