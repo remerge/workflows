@@ -119,7 +119,6 @@ jobs:
         uses: chrnorm/deployment-status@v2
         with:
           token: "${{ github.token }}"
-          environment-url: ${{ steps.deployment.outputs.environment_url }}
           deployment-id: ${{ steps.deployment.outputs.deployment_id }}
           state: "${{ steps.nomad_deployment.outcome }}"
 
