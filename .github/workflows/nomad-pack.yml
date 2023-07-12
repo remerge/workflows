@@ -137,6 +137,7 @@ jobs:
           token: "${{ github.token }}"
 
       - name: Deploy to Nomad
+        id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         env:
           NOMAD_TOKEN: ${{ secrets.nomad_token }}
