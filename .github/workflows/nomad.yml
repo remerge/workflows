@@ -95,7 +95,16 @@ jobs:
               body: `Nomad Plan for ${{ inputs.cluster }} \n ${{ steps.nomad_plan.outputs.stdout }}`
             })
 
+      - name: Create github deployment
+        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+        id: deployment
+        uses: chrnorm/deployment-action@v2
+        with:
+          environment: ${{ inputs.environment }}
+          token: '${{ github.token }}'
+
       - name: Deploy to Nomad
+        id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         env:
           NOMAD_TOKEN: ${{ secrets.nomad_token }}
@@ -105,6 +114,14 @@ jobs:
           NOMAD_VAR_environment: ${{ inputs.environment }}
         run: |
           nomad job run ${{ env.NOMAD_ARG }} -detach ${{ inputs.config_file_name }}
+
+      - name: Update github deployment status
+        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: "${{ github.token }}"
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: "${{ steps.nomad_deployment.outcome }}"
 
   slack-notify-finish:
     if: ${{ always() && needs.nomad.result != 'skipped' }}
