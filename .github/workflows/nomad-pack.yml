@@ -42,6 +42,11 @@ on:
         required: true
         type: string
         description: Relative path to nomad_pack variable.
+      notify_github_deployment:
+        required: false
+        type: boolean
+        default: false
+        description: Specify whether to create and notify github deployment environments
 
     secrets:
       nomad_token:
@@ -128,6 +133,14 @@ jobs:
       #         body: `Nomad Plan for ${{ inputs.cluster }} \n ${{ steps.nomad_pack_plan.outputs.stdout }}`
       #       })
 
+      - name: Create github deployment
+        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy && inputs.notify_github_deployment }}
+        id: deployment
+        uses: chrnorm/deployment-action@v2
+        with:
+          environment: ${{ inputs.environment }}
+          token: "${{ github.token }}"
+
       - name: Deploy to Nomad
         id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
@@ -141,6 +154,14 @@ jobs:
           --var='environment=${{ inputs.environment }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack
+
+      - name: Update github deployment status
+        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy && inputs.notify_github_deployment }}
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: "${{ github.token }}"
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+          state: "${{ steps.nomad_deployment.outcome }}"
 
   slack-notify-finish:
     if: ${{ always() && needs.nomad.result != 'skipped' }}
