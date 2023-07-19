@@ -16,6 +16,11 @@ on:
         type: string
         default: ubuntu-latest
         required: false
+      sign_commits:
+        description: "Sign commits using GPG key, defaults to 'false'"
+        type: boolean
+        default: false
+        required: false
     secrets:
       personal_access_token:
         description: "Need a PAT with update permissions to send events to a repo"
@@ -23,6 +28,12 @@ on:
       ssh_key:
         description: "Need an SSH key to fetch private repos"
         required: true
+      dep_updater_gpg_private_key:
+        description: "Need GPG private key for signing commits"
+        required: false
+      dep_updater_gpg_private_passphrase:
+        description: "Need GPG passphrase key for signing commits"
+        required: false
 
 env:
   GOPRIVATE: github.com/remerge
@@ -49,9 +60,10 @@ jobs:
           git diff
 
       - uses: crazy-max/ghaction-import-gpg@v3
+        if: ${{ inputs.sign_commits }}
         with:
-          gpg-private-key: ${{ secrets.DEP_UPDATER_GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.DEP_UPDATER_GPG_PASSPHRASE }}
+          gpg-private-key: ${{ secrets.dep_updater_gpg_private_key }}
+          passphrase: ${{ secrets.dep_updater_gpg_private_passphrase }}
           git-user-signingkey: true
           git-commit-gpgsign: true
 
