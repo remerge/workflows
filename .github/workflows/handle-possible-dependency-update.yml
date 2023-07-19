@@ -48,6 +48,13 @@ jobs:
           go mod tidy
           git diff
 
+      - uses: crazy-max/ghaction-import-gpg@v3
+        with:
+          gpg-private-key: ${{ secrets.DEP_UPDATER_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.DEP_UPDATER_GPG_PASSPHRASE }}
+          git-user-signingkey: true
+          git-commit-gpgsign: true
+
       - name: Create or update pull request to update ${{ inputs.repo_name }}
         uses: peter-evans/create-pull-request@v4
         with:
