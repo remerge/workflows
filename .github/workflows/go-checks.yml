@@ -84,7 +84,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          ${{ github.workspace }}/mkf/.tools
+          ${{ github.workspace }}/.tools
         key: ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
         restore-keys: |
           ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
