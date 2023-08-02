@@ -86,6 +86,22 @@ jobs:
         run: |
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
+      - name: Validate Nomad Configurations
+        id: nomad_validate
+        env:
+          NOMAD_TOKEN: ${{ secrets.nomad_token }}
+          NOMAD_ADDR: ${{ inputs.api_url }}
+          NOMAD_VAR_task_image: ${{ inputs.image_name }}
+          NOMAD_VAR_cluster: ${{ inputs.cluster }}
+          NOMAD_VAR_environment: ${{ inputs.environment }}
+        run: |
+          nomad-pack render ${{ inputs.pack_name }} \
+          --var='task_image=${{ inputs.image_name }}' \
+          --var='cluster=${{ inputs.cluster }}' --region='${{ inputs.cluster }}' \
+          --var='environment=${{ inputs.environment }}' \
+          --var-file=${{ inputs.variables_file_name }} \
+          --name=${{ inputs.name }} --registry=remerge-pack | nomad validate ${{ env.NOMAD_ARG }} ${{ inputs.config_file_name }} -
+
       - name: Run Nomad Pack Plan
         id: nomad_pack_plan
         if: ${{ inputs.run_plan }}
