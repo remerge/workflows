@@ -97,10 +97,11 @@ jobs:
         run: |
           nomad-pack render ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
-          --var='cluster=${{ inputs.cluster }}' --region='${{ inputs.cluster }}' \
+          --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var-file=${{ inputs.variables_file_name }} \
-          --name=${{ inputs.name }} --registry=remerge-pack | nomad validate ${{ env.NOMAD_ARG }} ${{ inputs.config_file_name }} -
+          --name=${{ inputs.name }} --registry=remerge-pack \
+          | tail -n +2 | nomad job validate -
 
       - name: Run Nomad Pack Plan
         id: nomad_pack_plan
