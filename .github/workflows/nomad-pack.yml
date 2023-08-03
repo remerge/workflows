@@ -42,11 +42,6 @@ on:
         required: true
         type: string
         description: Relative path to nomad_pack variable.
-      notify_github_deployment:
-        required: false
-        type: boolean
-        default: false
-        description: Specify whether to create and notify github deployment environments
 
     secrets:
       nomad_token:
@@ -134,7 +129,7 @@ jobs:
       #       })
 
       - name: Create github deployment
-        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy && inputs.notify_github_deployment }}
+        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         id: deployment
         uses: chrnorm/deployment-action@v2
         with:
@@ -156,7 +151,7 @@ jobs:
           --name=${{ inputs.name }} --registry=remerge-pack
 
       - name: Update github deployment status
-        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy && inputs.notify_github_deployment }}
+        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         uses: chrnorm/deployment-status@v2
         with:
           token: "${{ github.token }}"
