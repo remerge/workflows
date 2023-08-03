@@ -62,6 +62,7 @@ on:
 jobs:
   slack-notify-start:
     uses: remerge/workflows/.github/workflows/slack-notify.yml@main
+    if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
     with:
       cluster: ${{ inputs.cluster }}
       status: running
