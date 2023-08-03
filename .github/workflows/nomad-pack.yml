@@ -182,7 +182,7 @@ jobs:
           state: "${{ steps.nomad_deployment.outcome }}"
 
   slack-notify-finish:
-    if: ${{ always() && needs.nomad.result != 'skipped' }}
+    if: ${{ always() && needs.nomad.result != 'skipped' && github.event_name != 'pull_request' && inputs.run_deploy  }}
     needs: [nomad, slack-notify-start]
     uses: remerge/workflows/.github/workflows/slack-notify.yml@main
     with:
