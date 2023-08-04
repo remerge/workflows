@@ -44,6 +44,7 @@ on:
 
 jobs:
   slack-notify-start:
+    if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
     uses: remerge/workflows/.github/workflows/slack-notify.yml@main
     with:
       cluster: ${{ inputs.cluster }}
@@ -62,6 +63,18 @@ jobs:
           if [ -n "$VAR_FILE" ]; then
             echo "NOMAD_ARG=\"-var-file=${VAR_FILE}\"" >> "$GITHUB_ENV"
           fi
+
+      - name: Validate Nomad Configurations
+        id: nomad_validate
+        env:
+          NOMAD_TOKEN: ${{ secrets.nomad_token }}
+          NOMAD_ADDR: ${{ inputs.api_url }}
+          NOMAD_VAR_task_image: ${{ inputs.image_name }}
+          NOMAD_VAR_cluster: ${{ inputs.cluster }}
+          NOMAD_VAR_environment: ${{ inputs.environment }}
+        run: |
+          nomad validate ${{ env.NOMAD_ARG }} ${{ inputs.config_file_name }}
+
       - name: Run Nomad Plan
         id: nomad_plan
         if: ${{ inputs.run_plan }}
@@ -124,7 +137,7 @@ jobs:
           state: "${{ steps.nomad_deployment.outcome }}"
 
   slack-notify-finish:
-    if: ${{ always() && needs.nomad.result != 'skipped' }}
+    if: ${{ always() && needs.nomad.result != 'skipped' && github.event_name != 'pull_request' && inputs.run_deploy }}
     needs: [nomad, slack-notify-start]
     uses: remerge/workflows/.github/workflows/slack-notify.yml@main
     with:

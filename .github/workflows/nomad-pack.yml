@@ -57,6 +57,7 @@ on:
 jobs:
   slack-notify-start:
     uses: remerge/workflows/.github/workflows/slack-notify.yml@main
+    if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
     with:
       cluster: ${{ inputs.cluster }}
       status: running
@@ -80,6 +81,23 @@ jobs:
       - name: Add Nomad pack registry
         run: |
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
+
+      - name: Validate Nomad Configurations
+        id: nomad_validate
+        env:
+          NOMAD_TOKEN: ${{ secrets.nomad_token }}
+          NOMAD_ADDR: ${{ inputs.api_url }}
+          NOMAD_VAR_task_image: ${{ inputs.image_name }}
+          NOMAD_VAR_cluster: ${{ inputs.cluster }}
+          NOMAD_VAR_environment: ${{ inputs.environment }}
+        run: |
+          nomad-pack render ${{ inputs.pack_name }} \
+          --var='task_image=${{ inputs.image_name }}' \
+          --var='cluster=${{ inputs.cluster }}' \
+          --var='environment=${{ inputs.environment }}' \
+          --var-file=${{ inputs.variables_file_name }} \
+          --name=${{ inputs.name }} --registry=remerge-pack \
+          | tail -n +2 | nomad job validate -
 
       - name: Run Nomad Pack Plan
         id: nomad_pack_plan
@@ -159,7 +177,7 @@ jobs:
           state: "${{ steps.nomad_deployment.outcome }}"
 
   slack-notify-finish:
-    if: ${{ always() && needs.nomad.result != 'skipped' }}
+    if: ${{ always() && needs.nomad.result != 'skipped' && github.event_name != 'pull_request' && inputs.run_deploy  }}
     needs: [nomad, slack-notify-start]
     uses: remerge/workflows/.github/workflows/slack-notify.yml@main
     with:
