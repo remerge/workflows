@@ -21,7 +21,7 @@ on:
       run_plan:
         type: boolean
         description: Specify whether to plan nomad job to cluster
-        default: true
+        default: false
       run_deploy:
         type: boolean
         description: Specify whether to deploy nomad job to cluster

@@ -33,7 +33,7 @@ on:
       run_plan:
         type: boolean
         description: Specify whether to plan nomad pack to cluster
-        default: true
+        default: false
       run_deploy:
         type: boolean
         description: Specify whether to deploy nomad pack to cluster
