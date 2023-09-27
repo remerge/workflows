@@ -93,7 +93,7 @@ jobs:
 
       - name: Extract Go version from go.mod
         run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
       - name: Update Git config
