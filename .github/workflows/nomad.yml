@@ -34,11 +34,6 @@ on:
         type: string
         description: Relative path to nomad_pack variable.
         default: "nomad.hcl"
-      notify_github_deployment:
-        required: false
-        type: boolean
-        default: false
-        description: (Deprecated, value not being used) Specify whether to create and notify github deployment environments
     secrets:
       nomad_token:
         required: false
@@ -119,7 +114,7 @@ jobs:
         uses: chrnorm/deployment-action@v2
         with:
           environment: ${{ inputs.environment }}
-          token: '${{ github.token }}'
+          token: "${{ github.token }}"
 
       - name: Deploy to Nomad
         id: nomad_deployment
