@@ -66,6 +66,9 @@ jobs:
   nomad:
     runs-on: [self-hosted, generic, nomad]
     steps:
+      - name: Check if docker image is set
+        if: ${{ inputs.run_deploy && inputs.image_name == '' }}
+        run: exit 1
       - uses: actions/checkout@v3
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
