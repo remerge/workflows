@@ -50,6 +50,9 @@ jobs:
       matrix:
         cluster_detail: ${{fromJson(inputs.cluster_details)}}
     steps:
+    - name: Check if docker image is set
+      if: ${{ inputs.run_deploy && inputs.image_name == '' }}
+      run: exit 1
     - uses: actions/checkout@v3
     - name: Extract metadata (tags, labels) for Docker
       id: meta
