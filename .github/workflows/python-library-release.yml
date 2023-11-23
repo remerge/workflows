@@ -1,3 +1,4 @@
+---
 name: Python Library Release
 
 on:
@@ -12,27 +13,27 @@ on:
         description: "Git branches eligible for release"
         type: string
         required: false
-        default: 'production'
+        default: "production"
       aws_bucket:
         description: "AWS bucket"
         type: string
         required: false
-        default: 'remerge-artifacts-v2'
+        default: "remerge-artifacts-v2"
       bucket_directory:
         description: "Directory in AWS bucket"
         type: string
         required: false
-        default: '${{ github.repository }}/${{ github.head_ref || github.ref_name }}'
+        default: "${{ github.repository }}/${{ github.head_ref || github.ref_name }}"
       pypi_aws_bucket:
         description: "AWS bucket for PyPi server"
         type: string
         required: false
-        default: 'remerge-pypi'
+        default: "remerge-pypi"
       pypi_bucket_directory:
         description: "Directory in AWS bucket for PyPi server"
         type: string
         required: false
-        default: '${{ github.repository }}'
+        default: "${{ github.repository }}"
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
@@ -45,7 +46,7 @@ on:
     secrets:
       ssh_key:
         description: |
-          SSH key to use to build and test the model. The user of the key must have access to our other private 
+          SSH key to use to build and test the model. The user of the key must have access to our other private
           repositories.
         required: true
       pypi_username:
@@ -80,7 +81,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python_version || env.PYTHON_VERSION }}
-          cache: 'poetry'
+          cache: "poetry"
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
         with:
@@ -130,7 +131,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
           AWS_S3_BUCKET: ${{ inputs.aws_bucket }}
-          SOURCE_DIR: './dist/'
+          SOURCE_DIR: "./dist/"
           DEST_DIR: ${{ inputs.bucket_directory }}
 
       - name: Upload the artifact to S3 for PyPi
@@ -141,7 +142,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws_key_secret}}
           AWS_S3_BUCKET: ${{ inputs.pypi_aws_bucket }}
-          SOURCE_DIR: './dist/'
+          SOURCE_DIR: "./dist/"
           DEST_DIR: ${{ inputs.pypi_bucket_directory }}
       - name: Trigger the PyPi server refresh
         run: |

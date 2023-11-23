@@ -1,3 +1,4 @@
+---
 name: Deploy Application to Nomad Cluster
 on:
   workflow_call:

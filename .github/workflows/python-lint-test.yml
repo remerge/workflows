@@ -1,3 +1,4 @@
+---
 name: Python-based application lint and test
 
 on:
@@ -11,7 +12,7 @@ on:
       fetch_depth:
         default: 1
         type: string
-        description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+        description: "Number of commits to fetch. 0 indicates all history for all branches and tags."
         required: false
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
@@ -21,12 +22,12 @@ on:
     secrets:
       ssh_key:
         description: |
-          SSH key to use to build and test the model. The user of the key must have access to our other private 
+          SSH key to use to build and test the model. The user of the key must have access to our other private
           repositories.
         required: true
       fake_google_service_account_json:
         description: |
-          Google service account JSON to use while testing. It should be fake credentials, unless your tests are to 
+          Google service account JSON to use while testing. It should be fake credentials, unless your tests are to
           be run against a real bucket.
         required: false
       pypi_username:
@@ -54,7 +55,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python_version || env.PYTHON_VERSION }}
-          cache: 'poetry'
+          cache: "poetry"
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
         with:

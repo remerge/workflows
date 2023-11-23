@@ -1,3 +1,4 @@
+---
 # Runs common checks for Go package: lint (fmt, modules, static, shadowing),
 # tests and race.
 
@@ -24,7 +25,7 @@ on:
       lint-target:
         type: string
         required: false
-        default: 'lint'
+        default: "lint"
         description: "Lint Make target"
       no-lint-gen:
         type: boolean
@@ -69,49 +70,49 @@ jobs:
     name: "lint_and_test"
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v3
-    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-    - name: go modules cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg
-        key: ${{ runner.os }}-go-mod-${{ github.job }}-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-mod-${{ github.job }}-
-    - name: go tools cache
-      uses: actions/cache@v3
-      with:
-        path: |
-          ${{ github.workspace }}/.tools
-        key: ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
-        restore-keys: |
-          ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
-    - uses: actions/setup-go@v4
-      with:
-        go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - uses: ruby/setup-ruby@v1
-      with:
-        bundler-cache: true
-        ruby-version: '${{ inputs.lint-gen-ruby-version }}'
-      if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' }}"
+      - uses: actions/checkout@v3
+      - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+      - name: go modules cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg
+          key: ${{ runner.os }}-go-mod-${{ github.job }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-${{ github.job }}-
+      - name: go tools cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ github.workspace }}/.tools
+          key: ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
+          restore-keys: |
+            ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: "${{ inputs.lint-gen-ruby-version }}"
+        if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' }}"
 
-    - uses: webfactory/ssh-agent@v0.6.0
-      with:
-        ssh-private-key: '${{ secrets.ssh_key }}'
-      if: "${{ inputs.goprivate != '' }}"
+      - uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: "${{ secrets.ssh_key }}"
+        if: "${{ inputs.goprivate != '' }}"
 
-    - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
-      if: "${{ inputs.goprivate != '' }}"
+      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+        if: "${{ inputs.goprivate != '' }}"
 
-    - run: make ${{ inputs.lint-target }}
-    - run: make gen && git diff --exit-code --name-only HEAD
-      if: '!inputs.no-lint-gen'
-    - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
-      if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
-    - run: make test-nocache
-    - run: make race-nocache
-      if: '!inputs.no-race'
-    - run: 'docker-compose -f "${{ inputs.compose-file }}" down'
-      if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
+      - run: make ${{ inputs.lint-target }}
+      - run: make gen && git diff --exit-code --name-only HEAD
+        if: "!inputs.no-lint-gen"
+      - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
+        if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
+      - run: make test-nocache
+      - run: make race-nocache
+        if: "!inputs.no-race"
+      - run: 'docker-compose -f "${{ inputs.compose-file }}" down'
+        if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"

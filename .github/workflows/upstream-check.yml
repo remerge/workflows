@@ -1,3 +1,4 @@
+---
 # Check that specific directory is up-to-date with specific Git repo.
 # This workflow is optional and can be invoked once per week on master branch.
 
@@ -38,14 +39,14 @@ jobs:
   upstream:
     runs-on: ${{ inputs.os }}
     steps:
-    - uses: actions/checkout@v3
-      with:
-        persist-credentials: false
-    - uses: webfactory/ssh-agent@v0.6.0
-      with:
-        ssh-private-key: '${{ secrets.ssh_key }}'
-    - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: "${{ secrets.ssh_key }}"
+      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
-    - run: git remote add ${{ inputs.upstream_name }} https://${{ inputs.repo }}.git
-    - run: git fetch -a -p ${{ inputs.upstream_name }}
-    - run: git diff --exit-code --name-only --relative HEAD:${{ inputs.directory }}/ ${{ inputs.upstream_name }}/${{ inputs.branch }}:./
+      - run: git remote add ${{ inputs.upstream_name }} https://${{ inputs.repo }}.git
+      - run: git fetch -a -p ${{ inputs.upstream_name }}
+      - run: git diff --exit-code --name-only --relative HEAD:${{ inputs.directory }}/ ${{ inputs.upstream_name }}/${{ inputs.branch }}:./

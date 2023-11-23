@@ -1,7 +1,8 @@
 ---
 self-hosted-runner:
-  # Labels of self-hosted runner in array of string
   labels:
     - generic
-    - default
+    - self-hosted
     - nomad
+    - docker
+    - default

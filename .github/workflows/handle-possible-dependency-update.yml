@@ -1,3 +1,4 @@
+---
 name: Handle event that represents a possible dependency update
 
 on:
@@ -26,7 +27,7 @@ on:
 
 env:
   GOPRIVATE: github.com/remerge
-  GO111MODULE: on
+  GO111MODULE: "on"
 
 jobs:
   create-or-update-pull-request:

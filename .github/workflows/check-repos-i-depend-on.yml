@@ -1,3 +1,4 @@
+---
 # we want to run the "go get $dependency && go mod tidy && open PR if needed"
 # workflow for every dependency every time the main branch gets updated.
 # this fixes possible merge conflicts in existing branches/PRs and closes them
@@ -39,32 +40,32 @@ jobs:
     outputs:
       dependencies: ${{ steps.prepare.outputs.dependencies }}
     steps:
-    - name: Set up SSH agent
-      uses: webfactory/ssh-agent@v0.6.0
-      with:
-        ssh-private-key: ${{ secrets.ssh_key }}
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: ${{ secrets.ssh_key }}
 
-    - name: Set global git config
-      run: git config --global url.git@github.com:.insteadof https://github.com/
+      - name: Set global git config
+        run: git config --global url.git@github.com:.insteadof https://github.com/
 
-    - name: Check out code
-      uses: actions/checkout@v3
-    
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+      - name: Check out code
+        uses: actions/checkout@v3
 
-    - name: Prepare dependencies
-      id: prepare
-      run: |
-        DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-        DEPS=$(go list -m -f '{{if not .Indirect}}{{if not .Main}}{{.Path}}{{end}}{{end}}' all | grep "github.com/remerge/" | awk -F'/' '{print $NF}' | awk '{print $1}' | jq -R . | jq -s .)
-        {
-          echo "dependencies<<$DELIMITER"
-          echo "$DEPS"
-          echo "$DELIMITER"
-        } >> "$GITHUB_OUTPUT"
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+
+      - name: Prepare dependencies
+        id: prepare
+        run: |
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          DEPS=$(go list -m -f '{{if not .Indirect}}{{if not .Main}}{{.Path}}{{end}}{{end}}' all | grep "github.com/remerge/" | awk -F'/' '{print $NF}' | awk '{print $1}' | jq -R . | jq -s .)
+          {
+            echo "dependencies<<$DELIMITER"
+            echo "$DEPS"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
   notify-self-about-all-dependencies:
     needs: prepare-dependencies
@@ -73,15 +74,15 @@ jobs:
         dependency: ${{ fromJSON(needs.prepare-dependencies.outputs.dependencies) }}
     runs-on: ${{ inputs.os }}
     steps:
-    - run: echo ${{ matrix.dependency }}
-      shell: bash
+      - run: echo ${{ matrix.dependency }}
+        shell: bash
 
-    - name: Check possible dependency update
-      uses: remerge/check-possible-dependency-update@main
-      with:
-        repo_path: "github.com/remerge/${{ matrix.dependency }}"
-        repo_name: "remerge/${{ matrix.dependency }}"
-        assign_to: ${{ inputs.assign_to }}
-        app_id: ${{ secrets.app_id }}
-        app_key: ${{ secrets.app_key }}
-        ssh_key: ${{ secrets.ssh_key }}
+      - name: Check possible dependency update
+        uses: remerge/check-possible-dependency-update@main
+        with:
+          repo_path: "github.com/remerge/${{ matrix.dependency }}"
+          repo_name: "remerge/${{ matrix.dependency }}"
+          assign_to: ${{ inputs.assign_to }}
+          app_id: ${{ secrets.app_id }}
+          app_key: ${{ secrets.app_key }}
+          ssh_key: ${{ secrets.ssh_key }}
