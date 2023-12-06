@@ -1,3 +1,4 @@
+---
 name: Update github actions doc
 on:
   workflow_run:
@@ -20,8 +21,8 @@ jobs:
         run: python ./scripts/documentation/main.py -p .github/workflows/ > ./doc.md
       - uses: remerge/Github-action-confluence-sync@develop
         with:
-          from: './doc.md'
-          to: '2306670708'
+          from: "./doc.md"
+          to: "2306670708"
           cloud: remerge
           user: ${{secrets.confluence_user_email}}
           token: ${{secrets.confluence_token}}

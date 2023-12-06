@@ -1,3 +1,4 @@
+---
 name: Go app build
 
 on:
@@ -17,7 +18,7 @@ on:
         description: "Git branches eligible to build"
         type: string
         required: false
-        default: 'production'
+        default: "production"
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
@@ -25,8 +26,8 @@ on:
         required: false
     outputs:
       artifact:
-        description: 'Binary output artifact'
-        value: '${{ jobs.go-app.outputs.artifact }}'
+        description: "Binary output artifact"
+        value: "${{ jobs.go-app.outputs.artifact }}"
     secrets:
       ssh_key:
         description: "SSH key to use"
@@ -40,34 +41,34 @@ jobs:
       GOPRIVATE: ${{ inputs.goprivate }}
       REPONAME: ${{ github.event.repository.name }}
     outputs:
-      artifact: '${{ github.event.repository.name }}.linux.amd64'
+      artifact: "${{ github.event.repository.name }}.linux.amd64"
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-build-
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-
 
-    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-    - uses: actions/setup-go@v4
-      with:
-        go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - uses: webfactory/ssh-agent@v0.6.0
-      with:
-        ssh-private-key: '${{ secrets.ssh_key }}'
-    - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+      - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+      - uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: "${{ secrets.ssh_key }}"
+      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
-    - run: make dist
-      env:
-        CI_COMMIT: ${{ github.sha }}
-        CI_REPO: ${{ env.REPONAME }}
-        CI_NUM: ${{ github.run_id }}
-    - uses: actions/upload-artifact@v3
-      with:
-        name: ${{ env.REPONAME }}.linux.amd64
-        path: .build/${{ env.REPONAME }}.linux.amd64
+      - run: make dist
+        env:
+          CI_COMMIT: ${{ github.sha }}
+          CI_REPO: ${{ env.REPONAME }}
+          CI_NUM: ${{ github.run_id }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.REPONAME }}.linux.amd64
+          path: .build/${{ env.REPONAME }}.linux.amd64

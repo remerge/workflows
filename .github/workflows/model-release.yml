@@ -1,3 +1,4 @@
+---
 name: "[DEPRECATED] Model release DAG update"
 
 on:
@@ -16,7 +17,7 @@ on:
     secrets:
       ssh_key:
         description: |
-          SSH key to use to build and test the model. The user of the key must have access to our other private 
+          SSH key to use to build and test the model. The user of the key must have access to our other private
           repositories.
         required: true
       google_service_account_json:

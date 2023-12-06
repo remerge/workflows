@@ -1,3 +1,4 @@
+---
 # Check that Go modules dependencies is up-to-date.
 # This workflow is optional and can be invoked once per week on master branch.
 
@@ -32,24 +33,24 @@ jobs:
     env:
       GOPRIVATE: ${{ inputs.goprivate }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/cache@v3
-      with:
-        path: |
-          ~/.cache/go-build
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-modules-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-modules-
-    - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-    - uses: actions/setup-go@v4
-      with:
-        go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-    - uses: webfactory/ssh-agent@v0.6.0
-      with:
-        ssh-private-key: '${{ secrets.ssh_key }}'
-    - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-modules-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-modules-
+      - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.golang_version || env.GO_VERSION }}
+      - uses: webfactory/ssh-agent@v0.6.0
+        with:
+          ssh-private-key: "${{ secrets.ssh_key }}"
+      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
-    - run: go get -u
-    - run: go mod tidy -compat=${{ inputs.golang_version || env.GO_VERSION }}
-    - run: git diff --exit-code -G"${GOPRIVATE}" go.mod
+      - run: go get -u
+      - run: go mod tidy -compat=${{ inputs.golang_version || env.GO_VERSION }}
+      - run: git diff --exit-code -G"${GOPRIVATE}" go.mod

@@ -1,3 +1,4 @@
+---
 name: Docker build and push to GCR
 
 on:
