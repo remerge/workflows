@@ -47,19 +47,15 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: "${{ secrets.ssh-private-key }}"
+      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           check-latest: true
-
-      - uses: webfactory/ssh-agent@v0.6.0
-        with:
-          ssh-private-key: "${{ secrets.ssh-private-key }}"
-        if: "${{ inputs.go-private != '' }}"
-
-      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
-        if: "${{ inputs.go-private != '' }}"
 
       - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
         if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
