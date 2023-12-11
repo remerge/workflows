@@ -8,28 +8,28 @@ on:
         type: string
         required: false
         default: "europe-west4-docker.pkg.dev"
-        description: "Google Artifact registry"
+        description: "Google Cloud Artifact Registry location/region"
 
       project:
         type: string
         required: false
         default: "artifact-registry-ff9b"
-        description: "GCP project"
+        description: "Google Cloud Artifact Registry project"
 
-      repo:
+      repository:
         type: string
         required: true
-        description: "GCP project repository"
+        description: "Google Cloud Artifact Registry repository"
 
       image:
         type: string
         required: true
-        description: "Image name"
+        description: "Container image name"
 
       tag:
         type: string
         required: false
-        description: "Version tag"
+        description: "Container version tag"
 
       context:
         type: string
