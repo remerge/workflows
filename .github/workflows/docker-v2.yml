@@ -1,5 +1,5 @@
 ---
-name: Docker build and push to GAR
+name: docker-v2
 
 on:
   workflow_call:
