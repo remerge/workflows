@@ -132,7 +132,7 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repository }}/${{ inputs.image }}
           tags: |
             type=sha
             ${{ inputs.tag }}
