@@ -56,7 +56,7 @@ jobs:
     env:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: ${{ inputs.fetch_depth }}
       - name: Go modules cache

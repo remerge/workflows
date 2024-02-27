@@ -70,7 +70,7 @@ jobs:
     name: "lint_and_test"
     runs-on: ${{ inputs.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
       - name: go modules cache
         uses: actions/cache@v3
