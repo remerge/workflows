@@ -56,11 +56,11 @@ jobs:
     env:
       GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.fake_google_service_account_json }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: ${{ inputs.fetch_depth }}
       - name: Go modules cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cache/go-build
@@ -69,7 +69,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Go tools cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ${{ github.workspace }}/mkf/.tools
@@ -87,14 +87,14 @@ jobs:
           python-version: ${{ inputs.python_version || env.PYTHON_VERSION }}
           cache: "poetry"
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.6.0
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
             ${{ secrets.ssh_key }}
 
       - name: Extract Go version from go.mod
         run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
       - name: Update Git config
