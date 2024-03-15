@@ -46,7 +46,7 @@ on:
       1password_secret_path:
         required: false
         type: string
-        description: Path to nomad_token stored in 1password for accessing the Nomad cluster (takes a lower precedence to secrets.nomad_token)
+        description: Path to nomad_token stored in 1password
     secrets:
       nomad_token:
         required: false
