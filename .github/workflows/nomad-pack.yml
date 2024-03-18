@@ -52,6 +52,7 @@ on:
       nomad_token:
         required: false
         description: "Nomad token for accessing Nomad cluster"
+        default: ""
       ssh_key:
         description: "SSH key to use"
         required: true
