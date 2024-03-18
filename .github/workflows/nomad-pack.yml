@@ -122,6 +122,7 @@ jobs:
         id: nomad_pack_plan
         if: ${{ inputs.run_plan }}
         env:
+          NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
         # continue on error; default is `bash -e {0}`
         shell: bash {0}
@@ -176,6 +177,7 @@ jobs:
         id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         env:
+          NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
         run: |
           nomad-pack run ${{ inputs.pack_name }} \
