@@ -49,7 +49,11 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: "${{ secrets.ssh_key }}"
-      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+
+      - name: Update Git config
+        run: |
+          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
 
       - run: go get -u
       - run: go mod tidy -compat=${{ inputs.golang_version || env.GO_VERSION }}
