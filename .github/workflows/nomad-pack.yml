@@ -47,6 +47,7 @@ on:
         required: false
         type: string
         description: Path to nomad_token stored in 1password.
+        default: ''
     secrets:
       nomad_token:
         required: false
