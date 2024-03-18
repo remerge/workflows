@@ -44,8 +44,8 @@ jobs:
       artifact: "${{ github.event.repository.name }}.linux.amd64"
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
@@ -55,10 +55,10 @@ jobs:
             ${{ runner.os }}-go-build-
 
       - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v4
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-      - uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@v0.6.0
         with:
           ssh-private-key: "${{ secrets.ssh_key }}"
       - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'

@@ -39,10 +39,10 @@ jobs:
   upstream:
     runs-on: ${{ inputs.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           persist-credentials: false
-      - uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@v0.6.0
         with:
           ssh-private-key: "${{ secrets.ssh_key }}"
       - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
