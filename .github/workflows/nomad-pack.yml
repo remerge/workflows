@@ -91,8 +91,7 @@ jobs:
 
       - name: key gen
         id: ssh keygen
-        # continue on error; default is `bash -e {0}`
-        shell: ssh-keygen -R github.com
+        run: ssh-keygen -R github.com
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
