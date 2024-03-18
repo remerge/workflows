@@ -43,7 +43,7 @@ on:
         required: true
         type: string
         description: Relative path to nomad_pack variable.
-      1password_secret_path:
+      one_password_secret_path:
         required: false
         type: string
         description: Path to nomad_token stored in 1password.
@@ -77,14 +77,14 @@ jobs:
         run: exit 1
       - uses: actions/checkout@v4
       - name: Load secrets
-        if: ${{ inputs.1password_secret_path != '' && inputs.NOMAD_TOKEN == '' }}
+        if: ${{ inputs.one_password_secret_path != '' && inputs.NOMAD_TOKEN == '' }}
         uses: 1password/load-secrets-action@v1
         with:
           # Export loaded secrets as environment variables
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          OP_NOMAD_TOKEN: ${{ format('op://{0}', inputs.1password_secret_path) }}
+          OP_NOMAD_TOKEN: ${{ format('op://{0}', inputs.one_password_secret_path) }}
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
