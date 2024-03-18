@@ -92,6 +92,11 @@ jobs:
           ssh-private-key: |
             ${{ secrets.ssh_key }}
 
+      - name: Update Git config
+        run: |
+          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+
       - name: Extract Go version from go.mod
         run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
       - uses: actions/setup-go@v4

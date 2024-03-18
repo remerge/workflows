@@ -108,6 +108,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
 
+      - name: Update Git config
+        run: |
+          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 

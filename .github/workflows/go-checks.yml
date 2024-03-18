@@ -103,7 +103,10 @@ jobs:
           ssh-private-key: "${{ secrets.ssh_key }}"
         if: "${{ inputs.goprivate != '' }}"
 
-      - run: 'git config --global url."git@github.com:".insteadOf "https://github.com/"'
+      - name: Update Git config
+        run: |
+          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
         if: "${{ inputs.goprivate != '' }}"
 
       - run: make ${{ inputs.lint-target }}
