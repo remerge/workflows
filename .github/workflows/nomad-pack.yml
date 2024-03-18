@@ -76,8 +76,8 @@ jobs:
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         run: exit 1
       - uses: actions/checkout@v3
-      - run: echo "NOMAD_TOKEN=${{ inputs.NOMAD_TOKEN }}" >> "$GITHUB_ENV"
-        if: ${{ inputs.NOMAD_TOKEN != '' }}
+      - run: echo "NOMAD_TOKEN=${{ inputs.nomad_token }}" >> "$GITHUB_ENV"
+        if: ${{ inputs.nomad_token != '' }}
       - name: Load secrets from onepassword
         if: ${{ inputs.one_password_secret_path != '' && inputs.NOMAD_TOKEN == '' }}
         uses: 1password/load-secrets-action@v1
