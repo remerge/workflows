@@ -76,7 +76,9 @@ jobs:
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         run: exit 1
       - uses: actions/checkout@v3
-      - name: Load secrets
+      - run: echo "NOMAD_TOKEN=${{ inputs.NOMAD_TOKEN }}" >> "$GITHUB_ENV"
+        if: ${{ && inputs.NOMAD_TOKEN != '' }}
+      - name: Load secrets from onepassword
         if: ${{ inputs.one_password_secret_path != '' && inputs.NOMAD_TOKEN == '' }}
         uses: 1password/load-secrets-action@v1
         with:
@@ -84,7 +86,7 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          OP_NOMAD_TOKEN: ${{ format('op://{0}', inputs.one_password_secret_path) }}
+          NOMAD_TOKEN: ${{ format('op://{0}', inputs.one_password_secret_path) }}
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
         with:
@@ -103,7 +105,6 @@ jobs:
       - name: Validate Nomad Configurations
         id: nomad_validate
         env:
-          NOMAD_TOKEN: ${{ env.OP_NOMAD_TOKEN || inputs.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
@@ -121,7 +122,6 @@ jobs:
         id: nomad_pack_plan
         if: ${{ inputs.run_plan }}
         env:
-          NOMAD_TOKEN: ${{ env.OP_NOMAD_TOKEN || inputs.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
         # continue on error; default is `bash -e {0}`
         shell: bash {0}
@@ -176,7 +176,6 @@ jobs:
         id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         env:
-          NOMAD_TOKEN: ${{ env.OP_NOMAD_TOKEN || inputs.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
         run: |
           nomad-pack run ${{ inputs.pack_name }} \
