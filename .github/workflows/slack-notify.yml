@@ -42,7 +42,7 @@ jobs:
     outputs:
       ts: ${{ steps.notify.outputs.ts }}
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v6
         id: template
         env:
           INPUT_CLUSTER: ${{ inputs.cluster }}

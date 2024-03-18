@@ -59,7 +59,7 @@ jobs:
       - name: Check if docker image is set
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         run: exit 1
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: command args
         env:
           VAR_FILE: ${{ inputs.variables_file_name }}
@@ -101,7 +101,7 @@ jobs:
 
       - name: PR Comment
         if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.github_token}}
           script: |
