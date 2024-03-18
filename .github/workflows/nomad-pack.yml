@@ -79,7 +79,7 @@ jobs:
       - run: echo "NOMAD_TOKEN=${{ secrets.nomad_token }}" >> "$GITHUB_ENV"
         if: ${{ secrets.nomad_token }}
       - name: Load secrets from onepassword
-        if: ${{ inputs.one_password_secret_path && inputs.nomad_token }}
+        if: ${{ inputs.one_password_secret_path && secrets.nomad_token }}
         uses: 1password/load-secrets-action@v1
         with:
           # Export loaded secrets as environment variables
