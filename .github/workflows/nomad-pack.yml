@@ -94,11 +94,11 @@ jobs:
 
       - name: Update Git config
         run: |
+          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
           git config --global url."git@github.com:".insteadOf "https://github.com/"
 
       - name: Add Nomad pack registry
         run: |
-          ssh-keygen -R github.com
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
       - name: Validate Nomad Configurations
