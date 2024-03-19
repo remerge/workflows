@@ -57,6 +57,9 @@ on:
       slack_bot_token:
         required: true
         description: "Access token for Slack"
+      op_service_account:
+        required: false
+        description: "OnePassword service account token"
 
 jobs:
   slack-notify-start:
@@ -97,7 +100,7 @@ jobs:
           # Export loaded secrets as environment variables
           export-env: true
         env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account }}
           NOMAD_TOKEN: ${{ format('op://{0}', inputs.one_password_secret_path) }}
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
