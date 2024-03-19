@@ -47,7 +47,6 @@ on:
         required: false
         type: string
         description: Path to nomad_token stored in 1password.
-        default: ""
     secrets:
       nomad_token:
         required: false
@@ -91,7 +90,7 @@ jobs:
             echo "nomad_token_set=false" >> $GITHUB_OUTPUT;
           fi
 
-      - name: Load secrets from onepassword
+      - name: Load nomad_token from 1password
         if: ${{ inputs.one_password_secret_path != '' && steps.secret-check.outputs.nomad_token_set == 'false' }}
         uses: 1password/load-secrets-action@v1
         with:
