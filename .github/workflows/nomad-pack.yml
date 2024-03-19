@@ -92,7 +92,7 @@ jobs:
           fi
 
       - name: Load secrets from onepassword
-        if: ${{ inputs.one_password_secret_path != '' && steps.secret-check.outputs.available != 'false' }}
+        if: ${{ inputs.one_password_secret_path != '' && steps.secret-check.outputs.available == 'false' }}
         uses: 1password/load-secrets-action@v1
         with:
           # Export loaded secrets as environment variables
