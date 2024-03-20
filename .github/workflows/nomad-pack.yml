@@ -43,10 +43,10 @@ on:
         required: true
         type: string
         description: Relative path to nomad_pack variable.
-      one_password_secret_path:
+      one_password_secret_item_name:
         required: false
         type: string
-        description: Path to nomad_token stored in 1password.
+        description: The item name in one password "secrets" vault for the cluster's nomad token.
     secrets:
       nomad_token:
         required: false
@@ -57,7 +57,7 @@ on:
       slack_bot_token:
         required: true
         description: "Access token for Slack"
-      op_service_account:
+      op_service_account_token:
         required: false
         description: "OnePassword service account token"
 
@@ -75,6 +75,7 @@ jobs:
     runs-on: [self-hosted, generic, nomad]
     steps:
       - name: Check if docker image is set
+        shell: bash {0}
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         run: exit 1
       - uses: actions/checkout@v3
@@ -82,7 +83,7 @@ jobs:
       - name: Check for nomad_token input is set
         id: secret-check
         # perform secret check & put boolean result as an output
-        shell: bash
+        shell: bash {0}
         env:
           TOKEN: ${{ secrets.nomad_token }}
         run: |
@@ -94,14 +95,14 @@ jobs:
           fi
 
       - name: Load nomad_token from 1password
-        if: ${{ inputs.one_password_secret_path && steps.secret-check.outputs.nomad_token_set == 'false' }}
+        if: ${{ inputs.one_password_secret_item_name && steps.secret-check.outputs.nomad_token_set == 'false' }}
         uses: 1password/load-secrets-action@v1
         with:
           # Export loaded secrets as environment variables
           export-env: true
         env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account }}
-          NOMAD_TOKEN: ${{ format('op://{0}', inputs.one_password_secret_path) }}
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
+          NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.one_password_secret_item_name) }}
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
         with:
