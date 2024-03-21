@@ -67,7 +67,7 @@ jobs:
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         shell: bash {0}
         run: exit 1
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check for nomad_token input is set
         id: secret-check
         # perform secret check & put boolean result as an output
@@ -84,7 +84,7 @@ jobs:
 
       - name: Load nomad_token from 1password
         if: ${{ inputs.op_secret_name && steps.secret-check.outputs.nomad_token_set == 'false' }}
-        uses: 1password/load-secrets-action@v1
+        uses: 1password/load-secrets-action@v2
         with:
           # Export loaded secrets as environment variables
           export-env: true
@@ -132,7 +132,7 @@ jobs:
 
       - name: PR Comment
         if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.github_token}}
           script: |
