@@ -137,7 +137,7 @@ jobs:
             ${{ inputs.tag }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.context }}
           push: true
