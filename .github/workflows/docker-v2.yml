@@ -60,7 +60,7 @@ on:
           needs to generate files before building the Docker image, this has to
           be done in a job before calling this reusable workflow. This is a limit
           of GHA, as reusable workflows can't run as a step in a job, but always
-          run as their own job. To share data between jobs, `actions/cache@v3`
+          run as their own job. To share data between jobs, `actions/cache@v4`
           should be used to create a cache. This workflow can then access the cache
           and hence the generated files."
         type: string
@@ -111,7 +111,7 @@ jobs:
           git config --global url."git@github.com:".insteadOf "https://github.com/"
 
       - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{ inputs.gen-cache-key }}
           path: |
