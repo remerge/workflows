@@ -35,7 +35,7 @@ on:
         type: string
         description: Relative path to nomad_pack variable.
         default: "nomad.hcl"
-      one_password_secret_item_name:
+      op_secret_name:
         required: false
         type: string
         description: The item name in one password "secrets" vault for the cluster's nomad token.
@@ -83,14 +83,14 @@ jobs:
           fi
 
       - name: Load nomad_token from 1password
-        if: ${{ inputs.one_password_secret_item_name && steps.secret-check.outputs.nomad_token_set == 'false' }}
+        if: ${{ inputs.op_secret_name && steps.secret-check.outputs.nomad_token_set == 'false' }}
         uses: 1password/load-secrets-action@v1
         with:
           # Export loaded secrets as environment variables
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
-          NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.one_password_secret_item_name) }}
+          NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
       - name: command args
         env:
           VAR_FILE: ${{ inputs.variables_file_name }}
