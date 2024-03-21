@@ -43,6 +43,10 @@ on:
         required: true
         type: string
         description: Relative path to nomad_pack variable.
+      op_secret_name:
+        required: false
+        type: string
+        description: The item name in one password "secrets" vault for the cluster's nomad token.
     secrets:
       nomad_token:
         required: false
@@ -53,6 +57,9 @@ on:
       slack_bot_token:
         required: true
         description: "Access token for Slack"
+      op_service_account_token:
+        required: false
+        description: "OnePassword service account token"
 
 jobs:
   slack-notify-start:
@@ -68,9 +75,34 @@ jobs:
     runs-on: [self-hosted, generic, nomad]
     steps:
       - name: Check if docker image is set
+        shell: bash {0}
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         run: exit 1
       - uses: actions/checkout@v3
+
+      - name: Check for nomad_token input is set
+        id: secret-check
+        # perform secret check & put boolean result as an output
+        shell: bash {0}
+        env:
+          TOKEN: ${{ secrets.nomad_token }}
+        run: |
+          if [ "${{ secrets.nomad_token }}" != '' ]; then
+            echo "nomad_token_set=true" >> $GITHUB_OUTPUT;
+            echo "NOMAD_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          else
+            echo "nomad_token_set=false" >> $GITHUB_OUTPUT;
+          fi
+
+      - name: Load nomad_token from 1password
+        if: ${{ inputs.op_secret_name && steps.secret-check.outputs.nomad_token_set == 'false' }}
+        uses: 1password/load-secrets-action@v1
+        with:
+          # Export loaded secrets as environment variables
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
+          NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.6.0
         with:
@@ -89,7 +121,6 @@ jobs:
       - name: Validate Nomad Configurations
         id: nomad_validate
         env:
-          NOMAD_TOKEN: ${{ secrets.nomad_token }}
           NOMAD_ADDR: ${{ inputs.api_url }}
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
@@ -107,7 +138,7 @@ jobs:
         id: nomad_pack_plan
         if: ${{ inputs.run_plan }}
         env:
-          NOMAD_TOKEN: ${{ secrets.nomad_token }}
+          NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
         # continue on error; default is `bash -e {0}`
         shell: bash {0}
@@ -162,7 +193,7 @@ jobs:
         id: nomad_deployment
         if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
         env:
-          NOMAD_TOKEN: ${{ secrets.nomad_token }}
+          NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
           NOMAD_ADDR: ${{ inputs.api_url }}
         run: |
           nomad-pack run ${{ inputs.pack_name }} \
