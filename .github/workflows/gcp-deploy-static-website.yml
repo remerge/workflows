@@ -1,12 +1,6 @@
 ---
 name: GCP deploy static website
-# BUCKET: "test-static-staging-rmge-net"
-#   package_manager: yarn
-#   node_version_file: .node-version
-#   lock_file: yarn.lock
-#   build_command: yarn install
-#   build_path: ./admin
-#   env_file: .env-file
+
 on:
   workflow_call:
     inputs:
