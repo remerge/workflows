@@ -78,7 +78,7 @@ jobs:
       uses: 'google-github-actions/auth@v2'
       with:
         workload_identity_provider: ${{ vars.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
-        service_account: ${{ vars.GOOGLE_DEFAULT_SERVICE_ACCOUNT }}
+        project_id: ${{ vars.CLOUDSDK_CORE_PROJECT }}
 
     - id: 'upload-folder'
       uses: 'google-github-actions/upload-cloud-storage@v2'
