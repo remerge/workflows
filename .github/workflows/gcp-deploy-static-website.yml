@@ -31,6 +31,12 @@ on:
         type: string
         required: false
         default: yarn install
+        description: "Install command"
+
+      build_command:
+        type: string
+        required: false
+        default: yarn run build
         description: "Build command"
 
       working_directory:
@@ -64,14 +70,14 @@ jobs:
     - name: Install dependencies
       run: |
         set -ex
-        [ -f ${{ inputs.env_file }} ] && source ${{ inputs.env_file }}
         ${{ inputs.install_command }}
       working-directory: ${{ inputs.working_directory }}
 
     - name: Build application
       run: |
         set -ex
-        ${{ inputs.package_manager }} run build;
+        [ -f ${{ inputs.env_file }} ] && source ${{ inputs.env_file }}
+        ${{ inputs.build_command }};
       working-directory: ${{ inputs.working_directory }}
 
     - id: 'auth'
