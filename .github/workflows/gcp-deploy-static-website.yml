@@ -54,41 +54,41 @@ on:
 jobs:
   deploy:
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: "read"
+      id-token: "write"
     runs-on: ubuntu-latest
     steps:
-    - id: 'checkout'
-      uses: 'actions/checkout@v4'
+      - id: "checkout"
+        uses: "actions/checkout@v4"
 
-    - uses: actions/setup-node@v4
-      with:
-        cache: ${{ inputs.package_manager }}
-        cache-dependency-path: ${{ inputs.working_directory }}
-        node-version-file: ${{ inputs.node_version_file }}
+      - uses: actions/setup-node@v4
+        with:
+          cache: ${{ inputs.package_manager }}
+          cache-dependency-path: ${{ inputs.working_directory }}
+          node-version-file: ${{ inputs.node_version_file }}
 
-    - name: Install dependencies
-      run: |
-        set -ex
-        ${{ inputs.install_command }}
-      working-directory: ${{ inputs.working_directory }}
+      - name: Install dependencies
+        run: |
+          set -ex
+          ${{ inputs.install_command }}
+        working-directory: ${{ inputs.working_directory }}
 
-    - name: Build application
-      run: |
-        set -ex
-        [ -f ${{ inputs.env_file }} ] && source ${{ inputs.env_file }}
-        ${{ inputs.build_command }};
-      working-directory: ${{ inputs.working_directory }}
+      - name: Build application
+        run: |
+          set -ex
+          [ -f ${{ inputs.env_file }} ] && source ${{ inputs.env_file }}
+          ${{ inputs.build_command }};
+        working-directory: ${{ inputs.working_directory }}
 
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v2'
-      with:
-        workload_identity_provider: ${{ vars.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
-        project_id: ${{ vars.CLOUDSDK_CORE_PROJECT }}
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          workload_identity_provider: ${{ vars.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.CLOUDSDK_CORE_PROJECT }}
 
-    - id: 'upload-folder'
-      uses: 'google-github-actions/upload-cloud-storage@v2'
-      with:
-        path: ${{ format('{0}/{1}',inputs.working_directory,inputs.upload_folder) }}
-        destination: ${{ inputs.bucket }}
-        parent: false
+      - id: "upload-folder"
+        uses: "google-github-actions/upload-cloud-storage@v2"
+        with:
+          path: ${{ format('{0}/{1}',inputs.working_directory,inputs.upload_folder) }}
+          destination: ${{ inputs.bucket }}
+          parent: false
