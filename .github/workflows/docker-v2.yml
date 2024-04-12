@@ -18,7 +18,8 @@ on:
 
       repository:
         type: string
-        required: true
+        required: false
+        default: services
         description: "Google Cloud Artifact Registry repository"
 
       image:
