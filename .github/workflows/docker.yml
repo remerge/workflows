@@ -1,5 +1,5 @@
 ---
-name: Docker build and push to GAR
+name: docker
 
 on:
   workflow_call:
@@ -8,28 +8,29 @@ on:
         type: string
         required: false
         default: "europe-west4-docker.pkg.dev"
-        description: "Google Artifact registry"
+        description: "Google Cloud Artifact Registry location/region"
 
       project:
         type: string
         required: false
         default: "artifact-registry-ff9b"
-        description: "GCP project"
+        description: "Google Cloud Artifact Registry project"
 
-      repo:
+      repository:
         type: string
-        required: true
-        description: "GCP project repository"
+        required: false
+        default: services
+        description: "Google Cloud Artifact Registry repository"
 
       image:
         type: string
         required: true
-        description: "Image name"
+        description: "Container image name"
 
       tag:
         type: string
         required: false
-        description: "Version tag"
+        description: "Container version tag"
 
       context:
         type: string
@@ -74,19 +75,25 @@ on:
         type: string
         required: false
 
+      workload-identity-provider:
+        type: string
+        required: true
+        description: "Google Cloud Workload Identity provider"
+
+      service-account:
+        type: string
+        required: true
+        description: "Google Cloud default service account"
+
     outputs:
       image:
         description: "Full path of produced image"
         value: ${{ jobs.build-and-push.outputs.image }}
 
     secrets:
-      deploy_user_ssh_key:
+      ssh-private-key:
         required: true
-        description: "Private key for deploy user to access private repos"
-
-      gar_service_account_key:
-        required: true
-        description: "Google Artifact Registry service account key (JSON)"
+        description: "SSH key for access to private repositories"
 
 jobs:
   build-and-push:
@@ -95,60 +102,61 @@ jobs:
       image: ${{ steps.meta.outputs.tags }}
     steps:
       - uses: actions/checkout@v4
-
-      - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
-        uses: actions/cache@v4
         with:
-          key: ${{ inputs.gen-cache-key}}
-          path: |
-            ${{ inputs.gen-cache-path}}
+          fetch-depth: 0
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
+          ssh-private-key: ${{ secrets.ssh-private-key }}
 
       - name: Update Git config
         run: |
           curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
           git config --global url."git@github.com:".insteadOf "https://github.com/"
 
-      - name: Set up Docker Buildx
+      - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
+        uses: actions/cache@v4
+        with:
+          key: ${{ inputs.gen-cache-key }}
+          path: |
+            ${{ inputs.gen-cache-path }}
+
+      - id: buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Authenticate with Google Cloud
-        id: auth
+      - id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.gar_service_account_key }}
+          token_format: access_token
+          workload_identity_provider: ${{ inputs.workload-identity-provider }}
+          service_account: ${{ inputs.service-account }}
 
-      - name: Sign in to Google Artifact Registry
-        run: |
-          docker login -u _json_key \
-          --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry }}
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
+      - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repository }}/${{ inputs.image }}
           tags: |
             type=sha
             ${{ inputs.tag }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.context }}
-          push: true
           file: ${{ inputs.dockerfile }}
           build-args: |
             ${{ inputs.build-args }}
-            CI_COMMIT=${{ github.sha }}
-            CI_REPO=${{ github.event.repository.name }}
-            CI_NUM=${{ github.run_id }}
+            BUILD_COMMIT=${{ github.sha }}
+            BUILD_REPO=${{ github.event.repository.name }}
+            BUILD_ID=${{ github.run_id }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           ssh: default
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          push: true
