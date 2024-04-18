@@ -90,6 +90,12 @@ on:
         required: false
         description: "Slack thread timestamp"
 
+      fetch-depth:
+        type: number
+        required: false
+        default: 1
+        description: "Fetch depth for git checkout"
+
     outputs:
       image:
         description: "Full path of produced image"
@@ -108,7 +114,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: ${{ inputs.fetch-depth }}
 
       - uses: webfactory/ssh-agent@v0.8.0
         with:
