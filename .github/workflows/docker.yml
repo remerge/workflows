@@ -90,7 +90,7 @@ on:
         required: false
         description: "Slack channel to post to"
 
-      thread-ts:
+      slack-thread-ts:
         type: string
         required: false
         description: "Slack thread timestamp"
@@ -184,7 +184,7 @@ jobs:
       - uses: Fieldguide/action-slack-deploy-pipeline@v1
         if: always() && ${{ inputs.slack-channel }}
         with:
-          thread_ts: ${{ inputs.thread-ts }}
+          thread_ts: ${{ inputs.slack-thread-ts }}
         env:
           SLACK_DEPLOY_BOT_TOKEN: ${{ secrets.slack-token }}
           SLACK_DEPLOY_CHANNEL: ${{ inputs.slack-channel }}
