@@ -85,6 +85,11 @@ on:
         required: true
         description: "Google Cloud default service account"
 
+      slack-channel:
+        type: string
+        required: false
+        description: "Slack channel to post to"
+
       thread-ts:
         type: string
         required: false
@@ -105,6 +110,10 @@ on:
       ssh-private-key:
         required: true
         description: "SSH key for access to private repositories"
+
+      slack-token:
+        required: false
+        description: "Slack token for posting messages"
 
 jobs:
   build-and-push:
@@ -173,6 +182,9 @@ jobs:
           push: true
 
       - uses: Fieldguide/action-slack-deploy-pipeline@v1
-        if: always()
+        if: always() && ${{ inputs.slack-channel }}
         with:
           thread_ts: ${{ inputs.thread-ts }}
+        env:
+          SLACK_DEPLOY_BOT_TOKEN: ${{ secrets.slack-token }}
+          SLACK_DEPLOY_CHANNEL: ${{ inputs.slack-channel }}
