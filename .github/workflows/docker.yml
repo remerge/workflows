@@ -85,6 +85,11 @@ on:
         required: true
         description: "Google Cloud default service account"
 
+      thread-ts:
+        type: string
+        required: false
+        description: "Slack thread timestamp"
+
     outputs:
       image:
         description: "Full path of produced image"
@@ -160,3 +165,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
+
+      - uses: Fieldguide/action-slack-deploy-pipeline@v1
+        if: always()
+        with:
+          thread_ts: ${{ inputs.thread-ts }}
