@@ -49,6 +49,11 @@ on:
         required: false
         description: "Docker build arguments"
 
+      target:
+        type: string
+        required: false
+        description: "Docker build target"
+
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
@@ -176,6 +181,7 @@ jobs:
             BUILD_ID=${{ github.run_id }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          target: ${{ inputs.target }}
           ssh: default
           cache-from: type=gha
           cache-to: type=gha,mode=max
