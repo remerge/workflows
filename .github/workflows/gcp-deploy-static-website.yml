@@ -75,8 +75,9 @@ jobs:
 
       - name: Build application
         run: |
-          set -ex
+          set -aex
           [ -f ${{ inputs.env_file }} ] && source ${{ inputs.env_file }}
+          set +a
           ${{ inputs.build_command }};
         working-directory: ${{ inputs.working_directory }}
 
