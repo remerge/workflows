@@ -96,6 +96,9 @@ jobs:
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
 
+      # https://github.com/actions/setup-node/issues/531
+      - run: corepack enable
+
       - uses: actions/setup-node@v4
         with:
           cache: ${{ inputs.package-manager }}
