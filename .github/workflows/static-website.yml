@@ -7,15 +7,21 @@ on:
       bucket:
         type: string
         required: true
-        description: "GCS bucket to deploy to without gs:// prefix"
+        description: "Google Cloud Storage bucket to deploy to without gs:// prefix"
 
       upload-folder:
         type: string
         required: false
-        default: build
-        description: "Folder with built content"
+        default: dist
+        description: "Folder with static website content to upload (relative to `working-direcory`)"
 
-      package-manager:
+      use-nodejs:
+        type: boolean
+        required: false
+        default: true
+        description: "Use Node.js to build the website"
+
+      node-package-manager:
         type: string
         required: false
         default: yarn
@@ -36,7 +42,7 @@ on:
       build-command:
         type: string
         required: false
-        default: yarn run build
+        default: yarn build
         description: "Build command"
 
       working-directory:
@@ -98,10 +104,12 @@ jobs:
 
       # https://github.com/actions/setup-node/issues/531
       - run: corepack enable
+        if: ${{ inputs.use-nodejs }}
 
       - uses: actions/setup-node@v4
+        if: ${{ inputs.use-nodejs }}
         with:
-          cache: ${{ inputs.package-manager }}
+          cache: ${{ inputs.node-package-manager }}
           cache-dependency-path: ${{ inputs.working-directory }}
           node-version-file: ${{ inputs.node-version-file }}
 
