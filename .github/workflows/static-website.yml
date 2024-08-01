@@ -1,0 +1,146 @@
+---
+name: static-website
+
+on:
+  workflow_call:
+    inputs:
+      bucket:
+        type: string
+        required: true
+        description: "Google Cloud Storage bucket to deploy to without gs:// prefix"
+
+      upload-folder:
+        type: string
+        required: false
+        default: dist
+        description: "Folder with static website content to upload (relative to `working-direcory`)"
+
+      use-nodejs:
+        type: boolean
+        required: false
+        default: true
+        description: "Use Node.js to build the website"
+
+      node-package-manager:
+        type: string
+        required: false
+        default: yarn
+        description: "Node Package manager i.e yarn, npm"
+
+      node-version-file:
+        type: string
+        required: false
+        default: .node-version
+        description: "Node version File"
+
+      install-command:
+        type: string
+        required: false
+        default: yarn install
+        description: "Install command"
+
+      build-command:
+        type: string
+        required: false
+        default: yarn build
+        description: "Build command"
+
+      working-directory:
+        type: string
+        required: false
+        default: .
+        description: "Path to run build"
+
+      env-file:
+        type: string
+        required: false
+        default: .env
+        description: "build env file"
+
+      workload-identity-provider:
+        type: string
+        required: true
+        description: "Google Cloud Workload Identity provider"
+
+      service-account:
+        type: string
+        required: true
+        description: "Google Cloud default service account"
+
+      slack-channel:
+        type: string
+        required: false
+        description: "Slack channel to post to"
+
+      slack-thread-ts:
+        type: string
+        required: false
+        description: "Slack thread timestamp"
+
+      fetch-depth:
+        type: number
+        required: false
+        default: 1
+        description: "Fetch depth for git checkout"
+
+    secrets:
+      ssh-private-key:
+        required: true
+        description: "SSH key for access to private repositories"
+
+      slack-token:
+        required: false
+        description: "Slack token for posting messages"
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+
+      # https://github.com/actions/setup-node/issues/531
+      - run: corepack enable
+        if: ${{ inputs.use-nodejs }}
+
+      - uses: actions/setup-node@v4
+        if: ${{ inputs.use-nodejs }}
+        with:
+          cache: ${{ inputs.node-package-manager }}
+          cache-dependency-path: ${{ inputs.working-directory }}
+          node-version-file: ${{ inputs.node-version-file }}
+
+      - name: Install dependencies
+        run: |
+          set -ex
+          ${{ inputs.install-command }}
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Build application
+        run: |
+          set -aex
+          [ -f ${{ inputs.env-file }} ] && source ${{ inputs.env-file }}
+          set +a
+          ${{ inputs.build-command }};
+        working-directory: ${{ inputs.working-directory }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ inputs.workload-identity-provider }}
+          service_account: ${{ inputs.service-account }}
+
+      - uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: ${{ format('{0}/{1}',inputs.working-directory, inputs.upload-folder) }}
+          destination: ${{ inputs.bucket }}
+          parent: false
+
+      - uses: Fieldguide/action-slack-deploy-pipeline@v1
+        if: ${{ always() && inputs.slack-channel }}
+        with:
+          thread_ts: ${{ inputs.slack-thread-ts }}
+        env:
+          SLACK_DEPLOY_BOT_TOKEN: ${{ secrets.slack-token }}
+          SLACK_DEPLOY_CHANNEL: ${{ inputs.slack-channel }}
