@@ -112,10 +112,10 @@ jobs:
       - run: make ${{ inputs.lint-target }}
       - run: make gen && git diff --exit-code --name-only HEAD
         if: "${{ !inputs.no-lint-gen }}"
-      - run: 'docker-compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
+      - run: 'docker compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
         if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
       - run: make test-nocache
       - run: make race-nocache
         if: "${{ !inputs.no-race }}"
-      - run: 'docker-compose -f "${{ inputs.compose-file }}" down'
+      - run: 'docker compose -f "${{ inputs.compose-file }}" down'
         if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
