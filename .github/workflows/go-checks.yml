@@ -61,6 +61,9 @@ on:
       ssh_key:
         description: "SSH key to use"
         required: false
+      gar_service_account_key:
+        description: "Google Artifact Registry service account key (JSON)"
+        required: false
 
 env:
   GOPRIVATE: ${{ inputs.goprivate }}
