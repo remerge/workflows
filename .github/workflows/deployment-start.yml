@@ -1,0 +1,56 @@
+---
+name: deployment
+
+on:
+  workflow_call:
+    inputs:
+      github-environment:
+        type: string
+        required: true
+        description: "GitHub environment to deploy to"
+
+      slack-channel:
+        type: string
+        required: true
+        description: "Slack channel to post to"
+
+    secrets:
+      github-token:
+        required: true
+        description: "GitHub token for deployments"
+
+      slack-token:
+        required: true
+        description: "Slack token for posting messages"
+
+    outputs:
+      github-deployment-id:
+        description: "GitHub deployment ID"
+        value: ${{ jobs.github.outputs.id }}
+
+      slack-thread-ts:
+        description: "Slack thread timestamp"
+        value: ${{ jobs.slack.outputs.ts }}
+
+jobs:
+  slack:
+    runs-on: ubuntu-latest
+    outputs:
+      ts: ${{ steps.slack.outputs.ts }}
+    steps:
+      - id: slack
+        uses: hollow/action-slack-deploy-pipeline@CORE-280
+        with:
+          token: ${{ secrets.slack-token }}
+          channel: ${{ inputs.slack-channel }}
+
+  github:
+    runs-on: ubuntu-latest
+    outputs:
+      id: ${{ steps.github.outputs.deployment_id }}
+    steps:
+      - id: github
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ secrets.github-token }}
+          environment: ${{ inputs.github-environment }}
