@@ -15,10 +15,6 @@ on:
         description: "Slack channel to post to"
 
     secrets:
-      github-token:
-        required: true
-        description: "GitHub token for deployments"
-
       slack-token:
         required: true
         description: "Slack token for posting messages"
@@ -52,5 +48,5 @@ jobs:
       - id: github
         uses: chrnorm/deployment-action@v2
         with:
-          token: ${{ secrets.github-token }}
+          token: ${{ github.token }}
           environment: ${{ inputs.github-environment }}

@@ -25,10 +25,6 @@ on:
         description: "Slack thread timestamp"
 
     secrets:
-      github-token:
-        required: true
-        description: "GitHub token for deployments"
-
       slack-token:
         required: true
         description: "Slack token for posting messages"
@@ -51,6 +47,6 @@ jobs:
       - id: github
         uses: chrnorm/deployment-status@v2
         with:
-          token: ${{ secrets.github-token }}
+          token: ${{ github.token }}
           deployment-id: ${{ inputs.github-deployment-id }}
           state: ${{ inputs.github-deployment-state }}
