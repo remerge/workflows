@@ -137,10 +137,9 @@ jobs:
           destination: ${{ inputs.bucket }}
           parent: false
 
-      - uses: Fieldguide/action-slack-deploy-pipeline@v1
-        if: ${{ always() && inputs.slack-channel }}
+      - uses: remerge/action-slack-deploy-pipeline@f21c7c7
+        if: ${{ always() && inputs.slack-thread-ts }}
         with:
+          token: ${{ secrets.slack-token }}
+          channel: ${{ inputs.slack-channel }}
           thread_ts: ${{ inputs.slack-thread-ts }}
-        env:
-          SLACK_DEPLOY_BOT_TOKEN: ${{ secrets.slack-token }}
-          SLACK_DEPLOY_CHANNEL: ${{ inputs.slack-channel }}
