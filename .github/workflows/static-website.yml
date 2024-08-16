@@ -137,7 +137,7 @@ jobs:
           destination: ${{ inputs.bucket }}
           parent: false
 
-      - uses: hollow/action-slack-deploy-pipeline@CORE-280
+      - uses: remerge/action-slack-deploy-pipeline@f21c7c7
         if: ${{ always() && inputs.slack-thread-ts }}
         with:
           token: ${{ secrets.slack-token }}

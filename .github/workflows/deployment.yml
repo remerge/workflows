@@ -12,7 +12,7 @@ on:
       github-deployment-state:
         type: string
         description: "GitHub deployment state"
-        default: "success"
+        default: success
 
       slack-channel:
         type: string
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: slack
-        uses: hollow/action-slack-deploy-pipeline@CORE-280
+        uses: remerge/action-slack-deploy-pipeline@f21c7c7
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}

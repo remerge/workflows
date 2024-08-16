@@ -187,8 +187,8 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
 
-      - uses: hollow/action-slack-deploy-pipeline@CORE-280
-        if: ${{ always() && inputs.slack-channel }}
+      - uses: remerge/action-slack-deploy-pipeline@f21c7c7
+        if: ${{ always() && inputs.slack-thread-ts }}
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}

@@ -36,7 +36,7 @@ jobs:
       github-deployment-id: ${{ steps.github.outputs.deployment_id }}
     steps:
       - id: slack
-        uses: hollow/action-slack-deploy-pipeline@CORE-280
+        uses: remerge/action-slack-deploy-pipeline@f21c7c7
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}
