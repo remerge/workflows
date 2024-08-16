@@ -22,17 +22,18 @@ on:
     outputs:
       github-deployment-id:
         description: "GitHub deployment ID"
-        value: ${{ jobs.github.outputs.id }}
+        value: ${{ jobs.deployment-start.outputs.github-deployment-id }}
 
       slack-thread-ts:
         description: "Slack thread timestamp"
-        value: ${{ jobs.slack.outputs.ts }}
+        value: ${{ jobs.deployment-start.outputs.slack-thread-ts }}
 
 jobs:
-  slack:
+  deployment-start:
     runs-on: ubuntu-latest
     outputs:
-      ts: ${{ steps.slack.outputs.ts }}
+      slack-thread-ts: ${{ steps.slack.outputs.ts }}
+      github-deployment-id: ${{ steps.github.outputs.deployment_id }}
     steps:
       - id: slack
         uses: hollow/action-slack-deploy-pipeline@CORE-280
@@ -40,11 +41,6 @@ jobs:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}
 
-  github:
-    runs-on: ubuntu-latest
-    outputs:
-      id: ${{ steps.github.outputs.deployment_id }}
-    steps:
       - id: github
         uses: chrnorm/deployment-action@v2
         with:

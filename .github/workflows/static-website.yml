@@ -138,7 +138,7 @@ jobs:
           parent: false
 
       - uses: hollow/action-slack-deploy-pipeline@CORE-280
-        if: ${{ always() && inputs.slack-channel }}
+        if: ${{ always() && inputs.slack-thread-ts }}
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}

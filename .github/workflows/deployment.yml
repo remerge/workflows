@@ -30,7 +30,7 @@ on:
         description: "Slack token for posting messages"
 
 jobs:
-  slack:
+  deployment:
     runs-on: ubuntu-latest
     steps:
       - id: slack
@@ -41,9 +41,6 @@ jobs:
           thread_ts: ${{ inputs.slack-thread-ts }}
           conclusion: true
 
-  github:
-    runs-on: ubuntu-latest
-    steps:
       - id: github
         uses: chrnorm/deployment-status@v2
         with:
