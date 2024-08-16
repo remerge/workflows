@@ -187,7 +187,7 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
 
-      - uses: remerge/action-slack-deploy-pipeline@f21c7c7
+      - uses: remerge/action-slack-deploy-pipeline@f21c7c780c3b3eadb5a1b5471afbe39f58721f9a
         if: ${{ always() && inputs.slack-thread-ts }}
         with:
           token: ${{ secrets.slack-token }}

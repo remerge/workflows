@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: slack
-        uses: remerge/action-slack-deploy-pipeline@f21c7c7
+        uses: remerge/action-slack-deploy-pipeline@f21c7c780c3b3eadb5a1b5471afbe39f58721f9a
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}
