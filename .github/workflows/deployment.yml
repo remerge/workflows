@@ -34,12 +34,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: slack
-        uses: remerge/action-slack-deploy-pipeline@f21c7c780c3b3eadb5a1b5471afbe39f58721f9a
+        uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}
           thread_ts: ${{ inputs.slack-thread-ts }}
           conclusion: true
+          status: ${{ inputs.github-deployment-state }}
 
       - id: github
         uses: chrnorm/deployment-status@v2
@@ -47,3 +48,6 @@ jobs:
           token: ${{ github.token }}
           deployment-id: ${{ inputs.github-deployment-id }}
           state: ${{ inputs.github-deployment-state }}
+
+      - run: exit 1
+        if: ${{ always() && inputs.github-deployment-state != 'success' }}
