@@ -97,7 +97,7 @@ jobs:
             echo "nomad_token_set=true" >> "$GITHUB_OUTPUT";
             echo "NOMAD_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           else
-            echo "nomad_token_set=false" >>" $GITHUB_OUTPUT";
+            echo "nomad_token_set=false" >> "$GITHUB_OUTPUT";
           fi
 
       - name: Load nomad_token from 1password
