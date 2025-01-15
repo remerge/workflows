@@ -136,7 +136,7 @@ jobs:
           --var='task_image=${{ inputs.image_name }}' \
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
-          --var='${{ inputs.code_version || steps.checkout.outputs.commit }}' \
+          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack \
           | tail -n +2 | nomad job validate -
@@ -154,7 +154,7 @@ jobs:
           --var='task_image=${{ inputs.image_name }}' \
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
-          --var='${{ inputs.code_version || steps.checkout.outputs.commit }}' \
+          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack  \
           --exit-code-makes-changes=0)
@@ -207,7 +207,7 @@ jobs:
           nomad-pack run ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
           --var='cluster=${{ inputs.cluster }}' \
-          --var='${{ inputs.code_version || steps.checkout.outputs.commit }}' \
+          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var='environment=${{ inputs.environment }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack
