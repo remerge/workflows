@@ -75,6 +75,10 @@ repos:
     hooks:
       - id: actionlint-docker
         name: actionlint
+        args:
+          [
+            -ignore='the runner of ".+" action is too old to run on GitHub Actions.',
+          ]
 
   # https://github.com/bridgecrewio/checkov/tags
   - repo: https://github.com/bridgecrewio/checkov
