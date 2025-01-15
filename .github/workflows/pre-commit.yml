@@ -26,9 +26,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
+        # https://github.com/actions/checkout/releases
         uses: actions/checkout@v4
 
       - name: Load envrc
+        # https://github.com/HatsuneMiku3939/direnv-action/releases
         uses: HatsuneMiku3939/direnv-action@v1
 
       - name: Setup pre-commit
@@ -38,4 +40,5 @@ jobs:
         run: make install
 
       - name: Run pre-commit checks
-        uses: pre-commit/action@v3.0.0
+        # https://github.com/pre-commit/action/releases
+        uses: pre-commit/action@v3.0.1
