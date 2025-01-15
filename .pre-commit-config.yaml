@@ -71,7 +71,7 @@ repos:
 
   # https://github.com/rhysd/actionlint/tags
   - repo: https://github.com/rhysd/actionlint
-    rev: "v1.7.3"
+    rev: "v1.7.6"
     hooks:
       - id: actionlint-docker
         name: actionlint
