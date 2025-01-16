@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
       - name: Setup pre-commit
         run: python -m pip install pre-commit
       - name: go modules cache

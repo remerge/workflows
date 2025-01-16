@@ -39,6 +39,11 @@ on:
         required: false
         type: string
         description: The item name in one password "secrets" vault for the cluster's nomad token.
+      code_version:
+        required: false
+        type: string
+        description: Application code version. Default value is the latest commit sha
+        default: ""
     secrets:
       nomad_token:
         required: false
@@ -68,6 +73,8 @@ jobs:
         shell: bash {0}
         run: exit 1
       - uses: actions/checkout@v4
+        id: checkout
+
       - name: Check for nomad_token input is set
         id: secret-check
         # perform secret check & put boolean result as an output
@@ -76,10 +83,10 @@ jobs:
           TOKEN: ${{ secrets.nomad_token }}
         run: |
           if [ "${{ secrets.nomad_token }}" != '' ]; then
-            echo "nomad_token_set=true" >> $GITHUB_OUTPUT;
+            echo "nomad_token_set=true" >> "$GITHUB_OUTPUT";
             echo "NOMAD_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           else
-            echo "nomad_token_set=false" >> $GITHUB_OUTPUT;
+            echo "nomad_token_set=false" >> "$GITHUB_OUTPUT";
           fi
 
       - name: Load nomad_token from 1password
@@ -107,6 +114,7 @@ jobs:
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
           NOMAD_VAR_environment: ${{ inputs.environment }}
+          NOMAD_VAR_code_version: "${{ inputs.code_version || steps.checkout.outputs.commit }}"
         run: |
           nomad validate ${{ env.NOMAD_ARG }} ${{ inputs.config_file_name }}
 
@@ -119,6 +127,7 @@ jobs:
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
           NOMAD_VAR_environment: ${{ inputs.environment }}
+          NOMAD_VAR_code_version: "${{ inputs.code_version || steps.checkout.outputs.commit }}"
         run: |
           res=$(nomad job plan ${{ env.NOMAD_ARG }} \
            ${{ inputs.config_file_name }}) || ( [ $? -eq 1 ] && true)
@@ -160,6 +169,7 @@ jobs:
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
           NOMAD_VAR_environment: ${{ inputs.environment }}
+          NOMAD_VAR_code_version: "${{ inputs.code_version || steps.checkout.outputs.commit }}"
         run: |
           nomad job run ${{ env.NOMAD_ARG }} -detach ${{ inputs.config_file_name }}
 
