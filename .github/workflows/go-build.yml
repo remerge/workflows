@@ -72,7 +72,7 @@ jobs:
           CI_COMMIT: ${{ github.sha }}
           CI_REPO: ${{ env.REPONAME }}
           CI_NUM: ${{ github.run_id }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.REPONAME }}.linux.amd64
           path: .build/${{ env.REPONAME }}.linux.amd64
