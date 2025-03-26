@@ -178,6 +178,7 @@ jobs:
           minified_urls: ${{ steps.minified_urls.outputs.urls }}
         env:
           ROLLBAR_ACCESS_TOKEN: ${{ secrets.rollbar-access-token }}
+          ROLLBAR_USERNAME: ${{ github.actor }}
 
       - name: delete source maps before uploading code
         if: ${{ inputs.deployment-target-url != '' }}
