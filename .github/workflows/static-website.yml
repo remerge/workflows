@@ -136,18 +136,6 @@ jobs:
           ${{ inputs.build-command }};
         working-directory: ${{ inputs.working-directory }}
 
-      - uses: google-github-actions/auth@v2
-        with:
-          token_format: access_token
-          workload_identity_provider: ${{ inputs.workload-identity-provider }}
-          service_account: ${{ inputs.service-account }}
-
-      - uses: google-github-actions/upload-cloud-storage@v2
-        with:
-          path: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
-          destination: ${{ inputs.bucket }}
-          parent: false
-
       - uses: tj-actions/glob@v22
         if: ${{ inputs.deployment-target-url != '' }}
         id: glob
@@ -190,6 +178,26 @@ jobs:
           minified_urls: ${{ steps.minified_urls.outputs.urls }}
         env:
           ROLLBAR_ACCESS_TOKEN: ${{ secrets.rollbar-access-token }}
+          ROLLBAR_USERNAME: ${{ github.actor }}
+
+      - name: delete source maps before uploading code
+        if: ${{ inputs.deployment-target-url != '' }}
+        id: delete_sourcemaps_before_upload
+        run: |
+          rm ${{ steps.glob.outputs.paths }}
+        working-directory: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ inputs.workload-identity-provider }}
+          service_account: ${{ inputs.service-account }}
+
+      - uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
+          destination: ${{ inputs.bucket }}
+          parent: false
 
       - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         if: ${{ always() && inputs.slack-thread-ts != '' }}

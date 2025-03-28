@@ -17,6 +17,8 @@
 *.lzma
 *.cab
 *.xar
+*.zst
+*.tzst
 
 # Packing-only formats
 *.iso
@@ -51,6 +53,86 @@
 
 secring.*
 
+
+## https://raw.githubusercontent.com/github/gitignore/main/Global/JetBrains.gitignore
+
+# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+
+# User-specific stuff
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+# AWS User-specific
+.idea/**/aws.xml
+
+# Generated files
+.idea/**/contentModel.xml
+
+# Sensitive or high-churn files
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# Gradle
+.idea/**/gradle.xml
+.idea/**/libraries
+
+# Gradle and Maven with auto-import
+# When using Gradle or Maven with auto-import, you should exclude module files,
+# since they will be recreated, and may cause churn.  Uncomment if using
+# auto-import.
+# .idea/artifacts
+# .idea/compiler.xml
+# .idea/jarRepositories.xml
+# .idea/modules.xml
+# .idea/*.iml
+# .idea/modules
+# *.iml
+# *.ipr
+
+# CMake
+cmake-build-*/
+
+# Mongo Explorer plugin
+.idea/**/mongoSettings.xml
+
+# File-based project format
+*.iws
+
+# IntelliJ
+out/
+
+# mpeltonen/sbt-idea plugin
+.idea_modules/
+
+# JIRA plugin
+atlassian-ide-plugin.xml
+
+# Cursive Clojure plugin
+.idea/replstate.xml
+
+# SonarLint plugin
+.idea/sonarlint/
+
+# Crashlytics plugin (for Android Studio and IntelliJ)
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Editor-based Rest Client
+.idea/httpRequests
+
+# Android studio 3.1+ serialized cache file
+.idea/caches/build_file_checksums.ser
 
 ## https://raw.githubusercontent.com/github/gitignore/main/Global/Linux.gitignore
 
@@ -221,10 +303,6 @@ $RECYCLE.BIN/
 ## User settings
 xcuserdata/
 
-## Xcode 8 and earlier
-*.xcscmblueprint
-*.xccheckout
-
 ## https://raw.githubusercontent.com/github/gitignore/main/community/OpenSSL.gitignore
 
 # OpenSSL-related files best not committed
@@ -286,6 +364,9 @@ xcuserdata/
 # Go workspace file
 go.work
 go.work.sum
+
+# env file
+.env
 
 ## https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 
@@ -394,6 +475,12 @@ dist
 # vuepress v2.x temp and cache directory
 .temp
 .cache
+
+# vitepress build output
+**/.vitepress/dist
+
+# vitepress cache directory
+**/.vitepress/cache
 
 # Docusaurus cache and generated files
 .docusaurus
@@ -518,6 +605,12 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
@@ -585,6 +678,12 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Ruff stuff:
+.ruff_cache/
+
+# PyPI configuration file
+.pypirc
+
 ## https://raw.githubusercontent.com/github/gitignore/main/Terraform.gitignore
 
 # Local .terraform directories
@@ -612,6 +711,9 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
+# Ignore transient lock info files created by terraform apply
+.terraform.tfstate.lock.info
+
 # Include override files you do wish to add to version control using negated pattern
 # !example_override.tf
 
@@ -621,6 +723,9 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore newer files from NodeJS/Yarn
+.yarn/sdks
 
 # Custom ignores for Go projects
 .build/
@@ -638,11 +743,17 @@ id_*
 # Allow all .tfvars files even though the default gitignore file for Terraform
 # excludes these. These files should normally not be part of version control as
 # they are likely to contain sensitive data, such as password, private keys, and
-# other secrets. However, we provide all sensitive variables to Terraform
-# through Terraform Cloud and only use .tfvars files for non-sensitive variables
-# only.
+# other secrets. However, we provide all sensitive variables to Terraform through
+# Terraform Cloud and use .tfvars files for non-sensitive variables only.
 !*.tfvars
 !*.tfvars.json
+
+# Allow files from lib folders even though the default gitignore file excludes
+# these. These files should normally not be part of version control as they are
+# likely to contain binary files. However, some languages and frameworks, most
+# notably Ruby on Rails, stores files in the lib folder that must be tracked by
+# Git.
+!lib/
 
 # Ignore direnv files
 .direnv/
