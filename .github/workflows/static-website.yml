@@ -181,7 +181,7 @@ jobs:
           ROLLBAR_USERNAME: ${{ github.actor }}
 
       - name: delete source maps before uploading code
-        if: ${{ inputs.deployment-target-url != '' }}
+        if: ${{ steps.glob.outputs.paths != '' }}
         id: delete_sourcemaps_before_upload
         run: |
           rm ${{ steps.glob.outputs.paths }}
