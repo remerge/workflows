@@ -192,7 +192,6 @@ jobs:
           ssh: default
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
 
       - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         if: ${{ always() && inputs.slack-thread-ts != '' }}
