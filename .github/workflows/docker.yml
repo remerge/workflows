@@ -1,5 +1,5 @@
 ---
-name: Docker build and push to GAR
+name: Docker build (and push to GAR)
 
 on:
   workflow_call:
@@ -47,6 +47,12 @@ on:
         type: string
         required: false
         description: "Docker build arguments"
+
+      push:
+        type: boolean
+        required: false
+        default: true
+        description: "Whether to push the image to the registry"
 
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
@@ -136,11 +142,11 @@ jobs:
             type=sha
             ${{ inputs.tag }}
 
-      - name: Build and push Docker image
+      - name: Build (and push) Docker image
         uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.context }}
-          push: true
+          push: ${{ inputs.push }}
           file: ${{ inputs.dockerfile }}
           build-args: |
             ${{ inputs.build-args }}
