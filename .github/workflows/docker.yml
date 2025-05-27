@@ -54,6 +54,12 @@ on:
         required: false
         description: "Docker build target"
 
+      push:
+        type: boolean
+        required: false
+        default: true
+        description: "Whether to push the image to the registry"
+
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
@@ -173,6 +179,7 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.context }}
+          push: ${{ inputs.push }}
           file: ${{ inputs.dockerfile }}
           build-args: |
             ${{ inputs.build-args }}
@@ -185,7 +192,6 @@ jobs:
           ssh: default
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
 
       - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         if: ${{ always() && inputs.slack-thread-ts != '' }}
