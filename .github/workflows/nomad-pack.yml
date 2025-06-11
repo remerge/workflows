@@ -47,6 +47,11 @@ on:
         required: false
         type: string
         description: The item name in one password "secrets" vault for the cluster's nomad token.
+      code_version:
+        required: false
+        type: string
+        description: Application code version. Default value is the latest commit sha
+        default: ""
     secrets:
       nomad_token:
         required: false
@@ -79,6 +84,7 @@ jobs:
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
         run: exit 1
       - uses: actions/checkout@v4
+        id: checkout
 
       - name: Check for nomad_token input is set
         id: secret-check
@@ -88,10 +94,10 @@ jobs:
           TOKEN: ${{ secrets.nomad_token }}
         run: |
           if [ "${{ secrets.nomad_token }}" != '' ]; then
-            echo "nomad_token_set=true" >> $GITHUB_OUTPUT;
+            echo "nomad_token_set=true" >> "$GITHUB_OUTPUT";
             echo "NOMAD_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           else
-            echo "nomad_token_set=false" >> $GITHUB_OUTPUT;
+            echo "nomad_token_set=false" >> "$GITHUB_OUTPUT";
           fi
 
       - name: Load nomad_token from 1password
@@ -128,8 +134,10 @@ jobs:
         run: |
           nomad-pack render ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
+          --var='git_workflow_run_id=${{ github.run_id }}' \
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
+          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack \
           | tail -n +2 | nomad job validate -
@@ -145,8 +153,10 @@ jobs:
         run: |
           res=$(nomad-pack plan ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
-          --var='cluster=${{ inputs.cluster }}' --region='${{ inputs.cluster }}' \
+          --var='git_workflow_run_id=${{ github.run_id }}' \
+          --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
+          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack  \
           --exit-code-makes-changes=0)
@@ -198,7 +208,9 @@ jobs:
         run: |
           nomad-pack run ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
-          --var='cluster=${{ inputs.cluster }}' --region='${{ inputs.cluster }}' \
+          --var='git_workflow_run_id=${{ github.run_id }}' \
+          --var='cluster=${{ inputs.cluster }}' \
+          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var='environment=${{ inputs.environment }}' \
           --var-file=${{ inputs.variables_file_name }} \
           --name=${{ inputs.name }} --registry=remerge-pack
