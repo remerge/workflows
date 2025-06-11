@@ -114,6 +114,7 @@ jobs:
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
           NOMAD_VAR_environment: ${{ inputs.environment }}
+          NOMAD_VAR_git_workflow_run_id: ${{ github.run_id }}
           NOMAD_VAR_code_version: "${{ inputs.code_version || steps.checkout.outputs.commit }}"
         run: |
           nomad validate ${{ env.NOMAD_ARG }} ${{ inputs.config_file_name }}
@@ -127,6 +128,7 @@ jobs:
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
           NOMAD_VAR_environment: ${{ inputs.environment }}
+          NOMAD_VAR_git_workflow_run_id: ${{ github.run_id }}
           NOMAD_VAR_code_version: "${{ inputs.code_version || steps.checkout.outputs.commit }}"
         run: |
           res=$(nomad job plan ${{ env.NOMAD_ARG }} \
@@ -169,6 +171,7 @@ jobs:
           NOMAD_VAR_task_image: ${{ inputs.image_name }}
           NOMAD_VAR_cluster: ${{ inputs.cluster }}
           NOMAD_VAR_environment: ${{ inputs.environment }}
+          NOMAD_VAR_git_workflow_run_id: ${{ github.run_id }}
           NOMAD_VAR_code_version: "${{ inputs.code_version || steps.checkout.outputs.commit }}"
         run: |
           nomad job run ${{ env.NOMAD_ARG }} -detach ${{ inputs.config_file_name }}

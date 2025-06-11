@@ -134,6 +134,7 @@ jobs:
         run: |
           nomad-pack render ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
+          --var='git_workflow_run_id=${{ github.run_id }}' \
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
@@ -152,6 +153,7 @@ jobs:
         run: |
           res=$(nomad-pack plan ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
+          --var='git_workflow_run_id=${{ github.run_id }}' \
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
@@ -206,6 +208,7 @@ jobs:
         run: |
           nomad-pack run ${{ inputs.pack_name }} \
           --var='task_image=${{ inputs.image_name }}' \
+          --var='git_workflow_run_id=${{ github.run_id }}' \
           --var='cluster=${{ inputs.cluster }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
           --var='environment=${{ inputs.environment }}' \
