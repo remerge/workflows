@@ -39,6 +39,11 @@ on:
         default: "Review Dependabot PR"
         description: "The summary of the Jira issue to be created"
 
+    secrets:
+      op_service_account_token:
+        required: true
+        description: "1Password service account token for loading secrets"
+
 jobs:
   create-jira-issue:
     runs-on: ubuntu-latest
