@@ -155,4 +155,4 @@ jobs:
             --user hal@remerge.io:$JIRA_API_KEY \
             --header 'Accept: application/json' \
             --header 'Content-Type: application/json' \
-            --data "{\"transition\": {\"id\": \"$JIRA_TRANSITION_ID\"}}""
+            --data "{\"transition\": {\"id\": \"$JIRA_TRANSITION_ID\"}}"
