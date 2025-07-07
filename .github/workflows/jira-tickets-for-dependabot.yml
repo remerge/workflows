@@ -65,44 +65,6 @@ jobs:
           REPORTER_USER_ID: ${{ inputs.reporter-user-id }}
           JIRA_ISSUE_SUMMARY: ${{ inputs.jira-issue-summary }}
         run: |
-          echo curl --request POST \
-            --url 'https://remerge.atlassian.net/rest/api/3/issue' \
-            --user "hal@remerge.io:$JIRA_API_KEY" \
-            --header 'Accept: application/json' \
-            --header 'Content-Type: application/json' \
-            --data "{
-              \"fields\": {
-                \"description\": {
-                  \"content\": [
-                    {
-                      \"content\": [
-                        {
-                          \"text\": \"Dependabot has opened a PR which needs reviewing: $PR_URL\",
-                          \"type\": \"text\"
-                        }
-                      ],
-                      \"type\": \"paragraph\"
-                    }
-                  ],
-                  \"type\": \"doc\",
-                  \"version\": 1
-                },
-                \"issuetype\": {
-                  \"id\": \"$ISSUE_TYPE\"
-                },
-                \"labels\": [
-                  \"dependabot\"
-                ],
-                \"project\": {
-                  \"id\": \"$PROJECT_ID\"
-                },
-                \"reporter\": {
-                  \"id\": \"$REPORTER_USER_ID\"
-                },
-                \"summary\": \"$JIRA_ISSUE_SUMMARY\"
-              }
-            }"
-
           export CREATED_ISSUE_RESPONSE=$(curl --request POST \
             --url 'https://remerge.atlassian.net/rest/api/3/issue' \
             --user "hal@remerge.io:$JIRA_API_KEY" \
@@ -141,7 +103,6 @@ jobs:
               }
             }")
           export CREATED_ISSUE_URL=$(echo $CREATED_ISSUE_RESPONSE | jq -r .self)
-          echo $CREATED_ISSUE_RESPONSE
           echo "Created Jira issue: $CREATED_ISSUE_URL"
           echo "CREATED_ISSUE_URL=$CREATED_ISSUE_URL" >> $GITHUB_ENV
 
