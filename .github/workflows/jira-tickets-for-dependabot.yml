@@ -11,31 +11,26 @@ on:
 
       issue-type:
         type: string
-        required: true
         default: "10272"
         description: "The URL of the pull request created by Dependabot"
 
       project-id:
         type: string
-        required: true
         default: "10105"
         description: "The URL of the pull request created by Dependabot"
 
       reporter-user-id:
         type: string
-        required: true
         default: "5da9eda38cc4310c2c0d2565"
         description: "The user ID of the reporter for the Jira issue"
 
       jira-transition-id:
         type: string
-        required: true
         default: "431"
         description: "The ID of the Jira transition to move the issue to the Review Requested column"
 
       jira-issue-summary:
         type: string
-        required: true
         default: "Review Dependabot PR"
         description: "The summary of the Jira issue to be created"
 
