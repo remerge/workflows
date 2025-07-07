@@ -1,0 +1,106 @@
+---
+name: jira-issues-for-dependabot
+
+on:
+  workflow_call:
+    inputs:
+      pr-url:
+        type: string
+        required: true
+        description: "The URL of the pull request created by Dependabot"
+
+      issue-type:
+        type: string
+        required: true
+        default: "10272"
+        description: "The URL of the pull request created by Dependabot"
+
+      project-id:
+        type: string
+        required: true
+        default: "10105"
+        description: "The URL of the pull request created by Dependabot"
+
+      reporter-user-id:
+        type: string
+        required: true
+        default: "5da9eda38cc4310c2c0d2565"
+        description: "The user ID of the reporter for the Jira issue"
+
+      jira-transition-id:
+        type: string
+        required: true
+        default: "431"
+        description: "The ID of the Jira transition to move the issue to the Review Requested column"
+
+      jira-issue-summary:
+        type: string
+        required: true
+        default: "Review Dependabot PR"
+        description: "The summary of the Jira issue to be created"
+
+jobs:
+  create-jira-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load Jira API token from 1password
+        uses: 1password/load-secrets-action@v2
+        with:
+          # Export loaded secrets as environment variables
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
+          JIRA_API_KEY: "op://secrets/api.jira_api_key/password"
+
+      - name: Create Jira issue for Dependabot PR
+        run: |
+          export CREATED_ISSUE_RESPONSE=$(curl --request POST \
+            --url 'https://remerge.atlassian.net/rest/api/3/issue' \
+            --user "hal@remerge.io:${{ env.JIRA_API_KEY }}" \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --data '{
+              "fields": {
+                "description": {
+                  "content": [
+                    {
+                      "content": [
+                        {
+                          "text": "Dependabot has opened a PR which needs reviewing: ${{ inputs.pr-url }}",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "paragraph"
+                    }
+                  ],
+                  "type": "doc",
+                  "version": 1
+                },
+                "issuetype": {
+                  "id": "${{ inputs.issue-type }}"
+                },
+                "labels": [
+                  "dependabot"
+                ],
+                "project": {
+                  "id": "${{ inputs.project-id }}"
+                },
+                "reporter": {
+                  "id": "${{ inputs.reporter-user-id }}"
+                },
+                "summary": "${{ inputs.jira-issue-summary }}"
+              }
+            }')
+          export CREATED_ISSUE_URL=$(echo $CREATED_ISSUE_RESPONSE | jq -r .self)
+          echo "Created Jira issue: $CREATED_ISSUE_URL"
+          echo "CREATED_ISSUE_URL=$CREATED_ISSUE_URL" >> $GITHUB_ENV
+
+      - name: Move created issue to the Review Requested column
+        run: |
+          echo "Trying to transition issue $CREATED_ISSUE_URL"
+          curl --request POST \
+            --url "$CREATED_ISSUE_URL/transitions" \
+            --user hal@remerge.io:${{ env.JIRA_API_KEY }} \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --data '{"transition": {"id": "${{ inputs.jira-transition-id }}"}}'
