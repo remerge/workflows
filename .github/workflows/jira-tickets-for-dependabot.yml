@@ -56,7 +56,7 @@ jobs:
         run: |
           export CREATED_ISSUE_RESPONSE=$(curl --request POST \
             --url 'https://remerge.atlassian.net/rest/api/3/issue' \
-            --user "hal@remerge.io:${{ env.JIRA_API_KEY }}" \
+            --user "hal@remerge.io:$JIRA_API_KEY" \
             --header 'Accept: application/json' \
             --header 'Content-Type: application/json' \
             --data '{
@@ -100,7 +100,7 @@ jobs:
           echo "Trying to transition issue $CREATED_ISSUE_URL"
           curl --request POST \
             --url "$CREATED_ISSUE_URL/transitions" \
-            --user hal@remerge.io:${{ env.JIRA_API_KEY }} \
+            --user hal@remerge.io:$JIRA_API_KEY \
             --header 'Accept: application/json' \
             --header 'Content-Type: application/json' \
             --data '{"transition": {"id": "${{ inputs.jira-transition-id }}"}}'
