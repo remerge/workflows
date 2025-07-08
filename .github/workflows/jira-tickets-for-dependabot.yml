@@ -60,7 +60,7 @@ jobs:
           REPORTER_USER_ID: ${{ inputs.reporter-user-id }}
           JIRA_ISSUE_SUMMARY: ${{ inputs.jira-issue-summary }}
         run: |
-          export CREATED_ISSUE_RESPONSE=$(curl --request POST \
+          CREATED_ISSUE_RESPONSE=$(curl --request POST \
             --url 'https://remerge.atlassian.net/rest/api/3/issue' \
             --user "hal@remerge.io:$JIRA_API_KEY" \
             --header 'Accept: application/json' \
@@ -97,7 +97,8 @@ jobs:
                 \"summary\": \"$JIRA_ISSUE_SUMMARY\"
               }
             }")
-          export CREATED_ISSUE_URL=$(echo $CREATED_ISSUE_RESPONSE | jq -r .self)
+          CREATED_ISSUE_URL=$(echo $CREATED_ISSUE_RESPONSE | jq -r .self)
+
           echo "Created Jira issue: $CREATED_ISSUE_URL"
           echo "CREATED_ISSUE_URL=$CREATED_ISSUE_URL" >> $GITHUB_ENV
 
