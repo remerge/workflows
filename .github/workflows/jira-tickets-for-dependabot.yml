@@ -97,10 +97,9 @@ jobs:
                 \"summary\": \"$JIRA_ISSUE_SUMMARY\"
               }
             }")
-          CREATED_ISSUE_URL=$(echo $CREATED_ISSUE_RESPONSE | jq -r .self)
-
+          CREATED_ISSUE_URL=$(echo "$CREATED_ISSUE_RESPONSE" | jq -r .self)
           echo "Created Jira issue: $CREATED_ISSUE_URL"
-          echo "CREATED_ISSUE_URL=$CREATED_ISSUE_URL" >> $GITHUB_ENV
+          echo "CREATED_ISSUE_URL=$CREATED_ISSUE_URL" >> "$GITHUB_ENV"
 
       - name: Move created issue to the Review Requested column
         env:
@@ -109,7 +108,7 @@ jobs:
           echo "Trying to transition issue $CREATED_ISSUE_URL"
           curl --request POST \
             --url "$CREATED_ISSUE_URL/transitions" \
-            --user hal@remerge.io:$JIRA_API_KEY \
-            --header 'Accept: application/json' \
-            --header 'Content-Type: application/json' \
+            --user "hal@remerge.io:$JIRA_API_KEY" \
+            --header "Accept: application/json" \
+            --header "Content-Type: application/json" \
             --data "{\"transition\": {\"id\": \"$JIRA_TRANSITION_ID\"}}"
