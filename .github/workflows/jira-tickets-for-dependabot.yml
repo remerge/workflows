@@ -11,22 +11,22 @@ on:
 
       issue-type:
         type: string
-        default: "10272"
+        required: true
         description: "The ID of a Jira issue type to create"
 
       project-id:
         type: string
-        default: "10105"
+        required: true
         description: "The ID of the project to create the issue in"
 
       reporter-user-id:
         type: string
-        default: "5da9eda38cc4310c2c0d2565"
+        required: true
         description: "The user ID of the reporter for the Jira issue"
 
       jira-transition-id:
         type: string
-        default: "431"
+        required: true
         description: "The ID of the Jira transition to move the issue to the Review Requested column"
 
       jira-issue-summary:
