@@ -12,12 +12,12 @@ on:
       issue-type:
         type: string
         default: "10272"
-        description: "The URL of the pull request created by Dependabot"
+        description: "The ID of a Jira issue type to create"
 
       project-id:
         type: string
         default: "10105"
-        description: "The URL of the pull request created by Dependabot"
+        description: "The ID of the project to create the issue in"
 
       reporter-user-id:
         type: string
