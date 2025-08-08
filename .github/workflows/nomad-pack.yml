@@ -91,7 +91,6 @@ jobs:
 
   nomad:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
     steps:
       - name: Check if docker image is set
         shell: bash {0}
