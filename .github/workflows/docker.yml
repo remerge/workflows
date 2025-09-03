@@ -176,7 +176,7 @@ jobs:
             ${{ inputs.gen-cache-path}}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v
+        uses: docker/setup-buildx-action@v3
 
       # Auth with gar_service_account_key
       # to be deprecated
