@@ -143,8 +143,11 @@ jobs:
       image: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Set Variables
+        env:
+          WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
+          SERVICE_ACCOUNT: ${{ inputs.service-account }}
         run: |
-          if [ -n "${{ inputs.workload-identity-provider }}" ] && [ -n "${{ inputs.service-account }}" ]; then
+          if [ -n "$WORKLOAD_IDENTITY_PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ]; then
             use_workload_identify="true"
           else
             use_workload_identify="false"
