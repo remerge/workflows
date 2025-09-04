@@ -180,13 +180,6 @@ jobs:
           ROLLBAR_ACCESS_TOKEN: ${{ secrets.rollbar-access-token }}
           ROLLBAR_USERNAME: ${{ github.actor }}
 
-      - name: delete source maps before uploading code
-        if: ${{ steps.glob.outputs.paths != '' }}
-        id: delete_sourcemaps_before_upload
-        run: |
-          rm ${{ steps.glob.outputs.paths }}
-        working-directory: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
-
       - uses: google-github-actions/auth@v2
         with:
           token_format: access_token
