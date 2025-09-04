@@ -146,6 +146,9 @@ jobs:
         env:
           WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
           SERVICE_ACCOUNT: ${{ inputs.service-account }}
+          SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
+          DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
+          REPOSITORY: ${{ inputs.repository }}
         run: |
           if [ -n "$WORKLOAD_IDENTITY_PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ]; then
             use_workload_identify="true"
@@ -153,6 +156,22 @@ jobs:
             use_workload_identify="false"
           fi
           echo "use_workload_identify=$use_workload_identify" >> "$GITHUB_ENV"
+
+          if [ -n "$SSH_PRIVATE_KEY" ] && [ "$DEPLOY_USER_SSH_KEY" ]; then
+            SSH_PRIVATE_KEY="$DEPLOY_USER_SSH_KEY"
+          else
+            echo "ssh-private-key or deploy_user_ssh_key must be set."
+            exit 1
+          fi
+          echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> "$GITHUB_ENV"
+
+          if [ -n "$REPOSITORY" ] && [ "$REPO" ]; then
+            REPOSITORY="$REPO"
+          else
+            echo "repository or repo must be set."
+            exit 1
+          fi
+          echo "REPOSITORY=$REPO" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v4
         with:
