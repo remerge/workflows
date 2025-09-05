@@ -94,6 +94,15 @@ on:
         required: true
         description: "Google Artifact Registry service account key (JSON)"
 
+      pypi_username:
+        description: |
+          Username to use to log in into our private PyPi server.
+        required: false
+      pypi_password:
+        description: |
+          Password to use to log in into our private PyPi server.
+        required: false
+
 jobs:
   build-and-push:
     runs-on: ${{ inputs.os }}
@@ -158,3 +167,6 @@ jobs:
           ssh: default
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secrets: |
+            pypi_username=${{ secrets.pypi_username }}
+            pypi_password=${{ secrets.pypi_password }}
