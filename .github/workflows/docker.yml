@@ -188,7 +188,7 @@ jobs:
           PRIVATE_KEY: ${{ env.SSH_PRIVATE_KEY }}
         with:
           ssh-private-key: |
-            echo "$PRIVATE_KEY" | base64 -d
+            "$PRIVATE_KEY"
 
       - name: Update Git config
         run: |
