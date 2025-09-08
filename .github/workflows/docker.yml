@@ -181,7 +181,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
 
         with:
-          ssh-private-key: $(echo ${{ env.SSH_PRIVATE_KEY }} | | base64 -d)
+          ssh-private-key: $(echo ${{ env.SSH_PRIVATE_KEY }} | base64 -d)
 
       - name: Update Git config
         run: |
