@@ -163,6 +163,8 @@ jobs:
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
+          else
+            echo "SSH_PRIVATE_KEY=$(echo "$SSH_PRIVATE_KEY" | tr -d '\n\r')" >> "$GITHUB_ENV"
           fi
 
           if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
@@ -171,6 +173,8 @@ jobs:
           elif [ -z "$REPOSITORY" ] && [ -z "$REPO" ]; then
             echo "repository or repo must be set."
             exit 1
+          else
+            echo "REPOSITORY=$(echo "$REPOSITORY" | tr -d '\n\r')" >> "$GITHUB_ENV"
           fi
 
       - uses: actions/checkout@v4
