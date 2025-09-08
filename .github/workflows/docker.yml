@@ -158,14 +158,16 @@ jobs:
           echo "use_workload_identify=$use_workload_identify" >> "$GITHUB_ENV"
 
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
-            echo "SSH_PRIVATE_KEY=$DEPLOY_USER_SSH_KEY" >> "$GITHUB_ENV"
+            # Sanitize DEPLOY_USER_SSH_KEY for safe environment variable assignment
+            echo "SSH_PRIVATE_KEY=$(echo "$DEPLOY_USER_SSH_KEY" | tr -d '\n\r')" >> "$GITHUB_ENV"
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
           fi
 
           if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
-            echo "REPOSITORY=$REPO" >> "$GITHUB_ENV"
+            # Sanitize REPO for safe environment variable assignment
+            echo "REPOSITORY=$(echo "$REPO" | tr -d '\n\r')" >> "$GITHUB_ENV"
           elif [ -z "$REPOSITORY" ] && [ -z "$REPO" ]; then
             echo "repository or repo must be set."
             exit 1
