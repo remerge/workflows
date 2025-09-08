@@ -135,7 +135,13 @@ on:
       slack-token:
         required: false
         description: "Slack token for posting messages"
-
+env:
+  WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
+  SERVICE_ACCOUNT: ${{ inputs.service-account }}
+  SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
+  DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
+  REPOSITORY: ${{ inputs.repository }}
+  REPO: ${{ inputs.repo }}
 jobs:
   build-and-push:
     runs-on: ${{ inputs.os }}
@@ -143,12 +149,6 @@ jobs:
       image: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Set Variables
-        env:
-          WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
-          SERVICE_ACCOUNT: ${{ inputs.service-account }}
-          SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
-          DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
-          REPOSITORY: ${{ inputs.repository }}
         run: |
           if [ -n "$WORKLOAD_IDENTITY_PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ]; then
             use_workload_identify="true"
@@ -157,21 +157,19 @@ jobs:
           fi
           echo "use_workload_identify=$use_workload_identify" >> "$GITHUB_ENV"
 
-          if [ -n "$SSH_PRIVATE_KEY" ] && [ "$DEPLOY_USER_SSH_KEY" ]; then
-            SSH_PRIVATE_KEY="$DEPLOY_USER_SSH_KEY"
-          else
+          if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
+            echo "SSH_PRIVATE_KEY=$DEPLOY_USER_SSH_KEY" >> "$GITHUB_ENV"
+          elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
           fi
-          echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> "$GITHUB_ENV"
 
-          if [ -n "$REPOSITORY" ] && [ "$REPO" ]; then
-            REPOSITORY="$REPO"
-          else
+          if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
+            echo "REPOSITORY=$REPO" >> "$GITHUB_ENV"
+          elif [ -z "$REPOSITORY" ] && [ -z "$REPO" ]; then
             echo "repository or repo must be set."
             exit 1
           fi
-          echo "REPOSITORY=$REPO" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v4
         with:
@@ -179,8 +177,9 @@ jobs:
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
+
         with:
-          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
 
       - name: Update Git config
         run: |
@@ -233,7 +232,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ inputs.repo }}/${{ inputs.image }}
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}
           tags: |
             type=sha
             ${{ inputs.tag }}
