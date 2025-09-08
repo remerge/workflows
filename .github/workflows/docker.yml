@@ -151,11 +151,11 @@ jobs:
       - name: Set Variables
         run: |
           if [ -n "$WORKLOAD_IDENTITY_PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ]; then
-            use_workload_identify="true"
+            use_workload_identity="true"
           else
-            use_workload_identify="false"
+            use_workload_identity="false"
           fi
-          echo "use_workload_identify=$use_workload_identify" >> "$GITHUB_ENV"
+          echo "use_workload_identity=$use_workload_identity" >> "$GITHUB_ENV"
 
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
             # Sanitize DEPLOY_USER_SSH_KEY for safe environment variable assignment
@@ -164,7 +164,7 @@ jobs:
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
           else
-            echo "SSH_PRIVATE_KEY=$(echo "$SSH_PRIVATE_KEY" | tr -d '\n\r')" >> "$GITHUB_ENV"
+            echo "SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY" >> "$GITHUB_ENV"
           fi
 
           if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
@@ -204,7 +204,7 @@ jobs:
 
       # Auth with gar_service_account_key
       # to be deprecated
-      - if: ${{ env.use_workload_identify == 'false' }}
+      - if: ${{ env.use_workload_identity == 'false' }}
         name: Authenticate with Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
@@ -212,7 +212,7 @@ jobs:
           credentials_json: ${{ secrets.gar_service_account_key }}
 
       - name: Sign in to Google Artifact Registry
-        if: ${{ env.use_workload_identify == 'false' }}
+        if: ${{ env.use_workload_identity == 'false' }}
         run: |
           docker login -u _json_key \
           --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
@@ -220,7 +220,7 @@ jobs:
       # Auth with workload-identity
       # to become defacto
       - id: auth_with_workload_identity
-        if: ${{ env.use_workload_identify == 'true' }}
+        if: ${{ env.use_workload_identity == 'true' }}
         uses: google-github-actions/auth@v2
         with:
           token_format: access_token
@@ -228,7 +228,7 @@ jobs:
           service_account: ${{ inputs.service-account }}
 
       - uses: docker/login-action@v3
-        if: ${{ env.use_workload_identify == 'true' }}
+        if: ${{ env.use_workload_identity == 'true' }}
         with:
           registry: ${{ inputs.registry }}
           username: oauth2accesstoken
