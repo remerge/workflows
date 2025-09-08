@@ -141,8 +141,8 @@ jobs:
     env:
       WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
       SERVICE_ACCOUNT: ${{ inputs.service-account }}
-      SSH_PRIVATE_KEY: "$(echo ${{ secrets.ssh-private-key }} | base64)"
-      DEPLOY_USER_SSH_KEY: "$(echo ${{ secrets.deploy_user_ssh_key }} | base64)"
+      SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
+      DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
       REPOSITORY: ${{ inputs.repository }}
       REPO: ${{ inputs.repo }}
     outputs:
@@ -158,11 +158,16 @@ jobs:
           echo "use_workload_identity=$use_workload_identity" >> "$GITHUB_ENV"
 
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
-            # Sanitize DEPLOY_USER_SSH_KEY for safe environment variable assignment
-            echo "SSH_PRIVATE_KEY=$(echo "$DEPLOY_USER_SSH_KEY" | tr -d '\n\r' )" >> "$GITHUB_ENV"
+            # Encode and sanitize DEPLOY_USER_SSH_KEY
+            encoded_key=$(echo "$DEPLOY_USER_SSH_KEY" | base64 | tr -d '\n\r')
+            echo "SSH_PRIVATE_KEY=$encoded_key" >> "$GITHUB_ENV"
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
+          else
+            # Ensure SSH_PRIVATE_KEY is base64 encoded
+            encoded_key=$(echo "$SSH_PRIVATE_KEY" | base64 | tr -d '\n\r')
+            echo "SSH_PRIVATE_KEY=$encoded_key" >> "$GITHUB_ENV"
           fi
 
           if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
