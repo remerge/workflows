@@ -135,16 +135,16 @@ on:
       slack-token:
         required: false
         description: "Slack token for posting messages"
-env:
-  WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
-  SERVICE_ACCOUNT: ${{ inputs.service-account }}
-  SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
-  DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
-  REPOSITORY: ${{ inputs.repository }}
-  REPO: ${{ inputs.repo }}
 jobs:
   build-and-push:
     runs-on: ${{ inputs.os }}
+    env:
+      WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
+      SERVICE_ACCOUNT: ${{ inputs.service-account }}
+      SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
+      DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
+      REPOSITORY: ${{ inputs.repository }}
+      REPO: ${{ inputs.repo }}
     outputs:
       image: ${{ steps.meta.outputs.tags }}
     steps:
