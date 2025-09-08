@@ -1,0 +1,48 @@
+---
+name: deployment-start
+
+on:
+  workflow_call:
+    inputs:
+      github-environment:
+        type: string
+        required: true
+        description: "GitHub environment to deploy to"
+
+      slack-channel:
+        type: string
+        required: true
+        description: "Slack channel to post to"
+
+    secrets:
+      slack-token:
+        required: true
+        description: "Slack token for posting messages"
+
+    outputs:
+      github-deployment-id:
+        description: "GitHub deployment ID"
+        value: ${{ jobs.deployment-start.outputs.github-deployment-id }}
+
+      slack-thread-ts:
+        description: "Slack thread timestamp"
+        value: ${{ jobs.deployment-start.outputs.slack-thread-ts }}
+
+jobs:
+  deployment-start:
+    runs-on: ubuntu-latest
+    outputs:
+      slack-thread-ts: ${{ steps.slack.outputs.ts }}
+      github-deployment-id: ${{ steps.github.outputs.deployment_id }}
+    steps:
+      - id: slack
+        uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
+        with:
+          token: ${{ secrets.slack-token }}
+          channel: ${{ inputs.slack-channel }}
+
+      - id: github
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          environment: ${{ inputs.github-environment }}

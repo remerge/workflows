@@ -1,0 +1,200 @@
+---
+name: static-website
+
+on:
+  workflow_call:
+    inputs:
+      bucket:
+        type: string
+        required: true
+        description: "Google Cloud Storage bucket to deploy to without gs:// prefix"
+
+      upload-folder:
+        type: string
+        required: false
+        default: dist
+        description: "Folder with static website content to upload (relative to `working-direcory`)"
+
+      use-nodejs:
+        type: boolean
+        required: false
+        default: true
+        description: "Use Node.js to build the website"
+
+      node-package-manager:
+        type: string
+        required: false
+        default: yarn
+        description: "Node Package manager i.e yarn, npm"
+
+      node-version-file:
+        type: string
+        required: false
+        default: .node-version
+        description: "Node version File"
+
+      install-command:
+        type: string
+        required: false
+        default: yarn install
+        description: "Install command"
+
+      build-command:
+        type: string
+        required: false
+        default: yarn build
+        description: "Build command"
+
+      working-directory:
+        type: string
+        required: false
+        default: .
+        description: "Path to run build"
+
+      env-file:
+        type: string
+        required: false
+        default: .env
+        description: "build env file"
+
+      workload-identity-provider:
+        type: string
+        required: true
+        description: "Google Cloud Workload Identity provider"
+
+      service-account:
+        type: string
+        required: true
+        description: "Google Cloud default service account"
+
+      slack-channel:
+        type: string
+        required: false
+        description: "Slack channel to post to"
+
+      slack-thread-ts:
+        type: string
+        required: false
+        description: "Slack thread timestamp"
+
+      fetch-depth:
+        type: number
+        required: false
+        default: 1
+        description: "Fetch depth for git checkout"
+
+      deployment-target-url:
+        type: string
+        required: false
+        description: "Deployment target URL"
+
+    secrets:
+      ssh-private-key:
+        required: true
+        description: "SSH key for access to private repositories"
+
+      slack-token:
+        required: false
+        description: "Slack token for posting messages"
+
+      rollbar-access-token:
+        required: false
+        description: "Rollbar access token"
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+
+      # https://github.com/actions/setup-node/issues/531
+      - run: corepack enable
+        if: ${{ inputs.use-nodejs }}
+
+      - uses: actions/setup-node@v4
+        if: ${{ inputs.use-nodejs }}
+        with:
+          # TODO: caching is currently broken
+          # https://github.com/actions/setup-node/issues/887
+          # cache: ${{ inputs.node-package-manager }}
+          # cache-dependency-path: ${{ inputs.working-directory }}
+          node-version-file: ${{ inputs.node-version-file }}
+
+      - name: Install dependencies
+        run: |
+          set -ex
+          ${{ inputs.install-command }}
+        working-directory: ${{ inputs.working-directory }}
+
+      - name: Build application
+        run: |
+          set -aex
+          [ -f ${{ inputs.env-file }} ] && source ${{ inputs.env-file }}
+          set +a
+          ${{ inputs.build-command }};
+        working-directory: ${{ inputs.working-directory }}
+
+      - uses: tj-actions/glob@v22
+        if: ${{ inputs.deployment-target-url != '' }}
+        id: glob
+        with:
+          files: assets/*.js.map
+          working-directory: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
+
+      - name: prepend working directory before each source_map output
+        if: ${{ inputs.deployment-target-url != '' }}
+        id: source_maps
+        run: |
+          # shellcheck disable=SC2043,SC2086
+          ( echo -n "paths="
+            for i in ${{ steps.glob.outputs.paths }}; do
+              echo -n "${{ inputs.working-directory }}/${{ inputs.upload-folder }}/${i} "
+            done
+            echo
+          ) >> $GITHUB_OUTPUT
+        working-directory: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
+
+      - name: prepend url before each source_map output
+        if: ${{ inputs.deployment-target-url != '' }}
+        id: minified_urls
+        run: |
+          # shellcheck disable=SC2043,SC2086
+          ( echo -n "urls="
+            for i in ${{ steps.source_maps.outputs.paths }}; do
+              echo -n "${{ inputs.deployment-target-url }}/assets/$(basename ${i/.map}) "
+            done
+            echo
+          ) >> $GITHUB_OUTPUT
+        working-directory: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
+
+      - uses: rollbar/github-deploy-action@2.1.2
+        if: ${{ inputs.deployment-target-url != '' }}
+        with:
+          environment: production
+          version: ${{ github.sha }}
+          source_maps: ${{ steps.source_maps.outputs.paths }}
+          minified_urls: ${{ steps.minified_urls.outputs.urls }}
+        env:
+          ROLLBAR_ACCESS_TOKEN: ${{ secrets.rollbar-access-token }}
+          ROLLBAR_USERNAME: ${{ github.actor }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ inputs.workload-identity-provider }}
+          service_account: ${{ inputs.service-account }}
+
+      - uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: ${{ inputs.working-directory }}/${{ inputs.upload-folder }}
+          destination: ${{ inputs.bucket }}
+          parent: false
+
+      - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
+        if: ${{ always() && inputs.slack-thread-ts != '' }}
+        with:
+          token: ${{ secrets.slack-token }}
+          channel: ${{ inputs.slack-channel }}
+          thread_ts: ${{ inputs.slack-thread-ts }}
