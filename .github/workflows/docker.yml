@@ -141,8 +141,8 @@ jobs:
     env:
       WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
       SERVICE_ACCOUNT: ${{ inputs.service-account }}
-      SSH_PRIVATE_KEY: ${{ secrets.ssh-private-key }}
-      DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
+      SSH_PRIVATE_KEY: "$(echo ${{ secrets.ssh-private-key }} | base64)"
+      DEPLOY_USER_SSH_KEY: "$(echo ${{ secrets.deploy_user_ssh_key }} | base64)"
       REPOSITORY: ${{ inputs.repository }}
       REPO: ${{ inputs.repo }}
     outputs:
@@ -159,7 +159,7 @@ jobs:
 
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
             # Sanitize DEPLOY_USER_SSH_KEY for safe environment variable assignment
-            echo "SSH_PRIVATE_KEY=$(echo "$DEPLOY_USER_SSH_KEY" | tr -d '\n\r')" >> "$GITHUB_ENV"
+            echo "SSH_PRIVATE_KEY=$(echo "$DEPLOY_USER_SSH_KEY"  | tr -d '\n\r' )" >> "$GITHUB_ENV"
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
@@ -185,7 +185,7 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
 
         with:
-          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
+          ssh-private-key: $(echo ${{ env.SSH_PRIVATE_KEY }} | | base64 -d)
 
       - name: Update Git config
         run: |
