@@ -118,6 +118,13 @@ on:
         value: ${{ jobs.build-and-push.outputs.image }}
 
     secrets:
+      build-args-as-secret:
+        required: false
+        description: |
+          "Key Value pairs build args to be used in docker file Args
+          e.g PY_KEY=SUPER_SECRET_VALUE
+          "
+
       # to be deprecated soon
       deploy_user_ssh_key:
         required: false
@@ -255,6 +262,7 @@ jobs:
           push: ${{ inputs.push }}
           file: ${{ inputs.dockerfile }}
           build-args: |
+            ${{ secrets.build-args-as-secret }}
             ${{ inputs.build-args }}
             CI_COMMIT=${{ github.sha }}
             CI_REPO=${{ github.event.repository.name }}
