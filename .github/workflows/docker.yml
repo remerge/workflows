@@ -159,6 +159,7 @@ jobs:
 
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
             # Encode and sanitize DEPLOY_USER_SSH_KEY
+            echo "falling back to DEPLOY_USER_SSH_KEY"
             encoded_key=$(echo "$DEPLOY_USER_SSH_KEY" | base64 | tr -d '\n\r')
             echo "SSH_PRIVATE_KEY=$encoded_key" >> "$GITHUB_ENV"
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
@@ -166,6 +167,7 @@ jobs:
             exit 1
           else
             # Ensure SSH_PRIVATE_KEY is base64 encoded
+            echo "using SSH_PRIVATE_KEY"
             encoded_key=$(echo "$SSH_PRIVATE_KEY" | base64 | tr -d '\n\r')
             echo "SSH_PRIVATE_KEY=$encoded_key" >> "$GITHUB_ENV"
           fi
@@ -185,8 +187,7 @@ jobs:
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: |
-            ${{ env.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
 
       - name: Update Git config
         run: |
