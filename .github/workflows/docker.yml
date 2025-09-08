@@ -208,13 +208,13 @@ jobs:
       # Auth with gar_service_account_key
       # to be deprecated
       - if: ${{ env.use_workload_identity == 'false' }}
-        name: Authenticate with Google Cloud
+        name: Authenticate with Google Cloud (Service Account Key)
         id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.gar_service_account_key }}
 
-      - name: Sign in to Google Artifact Registry
+      - name: Docker login (Google Crediential file)
         if: ${{ env.use_workload_identity == 'false' }}
         run: |
           docker login -u _json_key \
@@ -223,6 +223,7 @@ jobs:
       # Auth with workload-identity
       # to become defacto
       - id: auth_with_workload_identity
+        name: Authenticate with Google Cloud (Workload Identity)
         if: ${{ env.use_workload_identity == 'true' }}
         uses: google-github-actions/auth@v2
         with:
@@ -231,6 +232,7 @@ jobs:
           service_account: ${{ inputs.service-account }}
 
       - uses: docker/login-action@v3
+        name: Docker login (Google oauth2accesstoken)
         if: ${{ env.use_workload_identity == 'true' }}
         with:
           registry: ${{ inputs.registry }}
