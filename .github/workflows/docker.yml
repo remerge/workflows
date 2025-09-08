@@ -157,20 +157,14 @@ jobs:
           fi
           echo "use_workload_identity=$use_workload_identity" >> "$GITHUB_ENV"
 
+          use_deprecated_ssh_var="false"
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
-            # Encode and sanitize DEPLOY_USER_SSH_KEY
-            echo "falling back to DEPLOY_USER_SSH_KEY"
-            encoded_key=$(echo "$DEPLOY_USER_SSH_KEY" | base64 | tr -d '\n\r')
-            echo "SSH_PRIVATE_KEY=$encoded_key" >> "$GITHUB_ENV"
+            use_deprecated_ssh_var="true"
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
             echo "ssh-private-key or deploy_user_ssh_key must be set."
             exit 1
-          else
-            # Ensure SSH_PRIVATE_KEY is base64 encoded
-            echo "using SSH_PRIVATE_KEY"
-            encoded_key=$(echo "$SSH_PRIVATE_KEY" | base64 | tr -d '\n\r')
-            echo "SSH_PRIVATE_KEY=$encoded_key" >> "$GITHUB_ENV"
           fi
+          echo "use_deprecated_ssh_var=$use_deprecated_ssh_var" >> "$GITHUB_ENV"
 
           if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
             # Sanitize REPO for safe environment variable assignment
@@ -184,10 +178,17 @@ jobs:
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
 
-      - name: Set up SSH
+      - if: ${{ env.use_deprecated_ssh_var == 'false' }}
+        name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.ssh-private-key }}
+
+      - if: ${{ env.use_deprecated_ssh_var == 'true' }}
+        name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
 
       - name: Update Git config
         run: |
