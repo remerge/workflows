@@ -150,11 +150,13 @@ jobs:
       - name: prepend working directory before each source_map output
         if: ${{ inputs.deployment-target-url != '' }}
         id: source_maps
+        env:
+          UPLOAD_FOLDER: ${{ inputs.upload-folder }}
         run: |
           # shellcheck disable=SC2043,SC2086
           ( echo -n "paths="
             for i in ${{ steps.glob.outputs.paths }}; do
-              echo -n "${{ inputs.working-directory }}/${{ inputs.upload-folder }}/${i} "
+              echo -n "${{ inputs.working-directory }}/$UPLOAD_FOLDER/${i} "
             done
             echo
           ) >> $GITHUB_OUTPUT
