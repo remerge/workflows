@@ -131,9 +131,11 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
 
       - name: Build application
+        env:
+          ENV_FILE: ${{ inputs.env-file }}
         run: |
           set -aex
-          [ -f ${{ inputs.env-file }} ] && source ${{ inputs.env-file }}
+          [ -f "$ENV_FILE" ] && source "$ENV_FILE"
           set +a
           ${{ inputs.build-command }};
         working-directory: ${{ inputs.working-directory }}
