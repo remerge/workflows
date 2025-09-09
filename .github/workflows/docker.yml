@@ -123,7 +123,7 @@ on:
         value: ${{ jobs.build-and-push.outputs.image }}
 
     secrets:
-      secrets-mount:
+      build-secrets:
         required: false
         description: |
           "https://docs.docker.com/build/ci/github-actions/secrets/
@@ -266,7 +266,7 @@ jobs:
           context: ${{ inputs.context }}
           push: ${{ inputs.push }}
           file: ${{ inputs.dockerfile }}
-          secrets: ${{ secrets.secrets-mount }}
+          secrets: ${{ secrets.build-secrets }}
           build-args: |
             ${{ inputs.build-args }}
             CI_COMMIT=${{ github.sha }}
