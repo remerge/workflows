@@ -153,11 +153,13 @@ jobs:
         id: source_maps
         env:
           UPLOAD_FOLDER: ${{ inputs.upload-folder }}
+          PATHS: ${{ steps.glob.outputs.paths }}
         run: |
           # shellcheck disable=SC2043,SC2086
           ( echo -n "paths="
-            for i in ${{ steps.glob.outputs.paths }}; do
-              echo -n "${{ inputs.working-directory }}/$UPLOAD_FOLDER/${i} "
+            IFS=' ' read -r -a path_array <<< "$PATHS"
+            for i in "${path_array[@]}"; do
+              echo -n "${{ inputs.working-directory }}/$UPLOAD_FOLDER/$i "
             done
             echo
           ) >> $GITHUB_OUTPUT
