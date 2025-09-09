@@ -169,11 +169,13 @@ jobs:
       - name: prepend url before each source_map output
         if: ${{ inputs.deployment-target-url != '' }}
         id: minified_urls
+        env:
+          DEPLOYMENT_TARGET_URL: ${{ inputs.deployment-target-url }}
         run: |
           # shellcheck disable=SC2043,SC2086
           ( echo -n "urls="
             for i in ${{ steps.source_maps.outputs.paths }}; do
-              echo -n "${{ inputs.deployment-target-url }}/assets/$(basename ${i/.map}) "
+              echo -n "$DEPLOYMENT_TARGET_URL/assets/$(basename ${i/.map}) "
             done
             echo
           ) >> $GITHUB_OUTPUT
