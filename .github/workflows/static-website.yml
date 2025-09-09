@@ -136,6 +136,7 @@ jobs:
           BUILD_COMMAND: ${{ inputs.build-command }}
         run: |
           set -aex
+          # shellcheck disable=SC1090
           [ -f "$ENV_FILE" ] && source "$ENV_FILE"
           set +a
           "$BUILD_COMMAND"
