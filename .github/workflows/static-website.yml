@@ -133,11 +133,12 @@ jobs:
       - name: Build application
         env:
           ENV_FILE: ${{ inputs.env-file }}
+          BUILD_COMMAND: ${{ inputs.build-command }}
         run: |
           set -aex
           [ -f "$ENV_FILE" ] && source "$ENV_FILE"
           set +a
-          ${{ inputs.build-command }};
+          "$BUILD_COMMAND"
         working-directory: ${{ inputs.working-directory }}
 
       - uses: tj-actions/glob@v22
