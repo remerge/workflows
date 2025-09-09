@@ -154,12 +154,13 @@ jobs:
         env:
           UPLOAD_FOLDER: ${{ inputs.upload-folder }}
           PATHS: ${{ steps.glob.outputs.paths }}
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         run: |
           # shellcheck disable=SC2043,SC2086
           ( echo -n "paths="
             IFS=' ' read -r -a path_array <<< "$PATHS"
             for i in "${path_array[@]}"; do
-              echo -n "${{ inputs.working-directory }}/$UPLOAD_FOLDER/$i "
+              echo -n "$WORKING_DIRECTORY/$UPLOAD_FOLDER/$i "
             done
             echo
           ) >> $GITHUB_OUTPUT
