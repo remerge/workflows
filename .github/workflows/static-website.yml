@@ -123,9 +123,11 @@ jobs:
           node-version-file: ${{ inputs.node-version-file }}
 
       - name: Install dependencies
+        env:
+          INSTALL_COMMAND: ${{ inputs.install-command }}
         run: |
           set -ex
-          ${{ inputs.install-command }}
+          "$INSTALL_COMMAND"
         working-directory: ${{ inputs.working-directory }}
 
       - name: Build application
