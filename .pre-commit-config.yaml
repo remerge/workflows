@@ -1,7 +1,4 @@
 ---
-default_language_version:
-  python: python3.12
-
 default_stages:
   - pre-commit
 
@@ -13,7 +10,7 @@ default_install_hook_types:
 repos:
   # https://github.com/pre-commit/pre-commit-hooks/tags
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v5.0.0"
+    rev: "v6.0.0"
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -40,18 +37,18 @@ repos:
         types: [text]
         exclude: "^project/"
         additional_dependencies:
-          - "prettier@3.3.3"
+          - "prettier@3.6.2"
 
   # https://github.com/igorshubovych/markdownlint-cli/tags
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: "v0.42.0"
+    rev: "v0.45.0"
     hooks:
       - id: markdownlint-fix
         name: markdownlint
 
   # https://github.com/adrienverge/yamllint/tags
   - repo: https://github.com/adrienverge/yamllint
-    rev: "v1.35.1"
+    rev: "v1.37.1"
     hooks:
       - id: yamllint
         entry: yamllint --strict
@@ -64,21 +61,21 @@ repos:
 
   # https://github.com/koalaman/shellcheck-precommit/tags
   - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: "v0.10.0"
+    rev: "v0.11.0"
     hooks:
       - id: shellcheck
         name: shellcheck
 
   # https://github.com/rhysd/actionlint/tags
   - repo: https://github.com/rhysd/actionlint
-    rev: "v1.7.6"
+    rev: "v1.7.7"
     hooks:
       - id: actionlint-docker
         name: actionlint
 
   # https://github.com/bridgecrewio/checkov/tags
   - repo: https://github.com/bridgecrewio/checkov
-    rev: "3.2.267"
+    rev: "3.2.461"
     hooks:
       - id: checkov
         name: checkov

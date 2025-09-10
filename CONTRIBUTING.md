@@ -25,7 +25,6 @@ need to be installed manually.
 - [docker](https://www.docker.com/products/docker-desktop/) or access to a
   working docker host
 - [pre-commit](https://pre-commit.com) to run formatting and linting
-- [pipx](https://pypa.github.io/pipx/) to install global dependencies
 - [direnv](https://direnv.net) to ensure a working environment
 - [copier](https://copier.readthedocs.io) to update this repository from the
   template
@@ -33,8 +32,7 @@ need to be installed manually.
 Most dependencies can be installed using [Homebrew](https://brew.sh):
 
 ```shell
-brew install --cask docker
-brew install pre-commit pipx direnv copier
+brew install docker pre-commit direnv copier
 ```
 
 Once `pre-commit` hook is activated (`make pre-commit-install`),
