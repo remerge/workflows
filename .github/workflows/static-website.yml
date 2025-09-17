@@ -123,23 +123,17 @@ jobs:
           node-version-file: ${{ inputs.node-version-file }}
 
       - name: Install dependencies
-        env:
-          INSTALL_COMMAND: ${{ inputs.install-command }}
         run: |
           set -ex
-          "$INSTALL_COMMAND"
+          ${{ inputs.install-command }}
         working-directory: ${{ inputs.working-directory }}
 
       - name: Build application
-        env:
-          ENV_FILE: ${{ inputs.env-file }}
-          BUILD_COMMAND: ${{ inputs.build-command }}
         run: |
           set -aex
-          # shellcheck disable=SC1090
-          [ -f "$ENV_FILE" ] && source "$ENV_FILE"
+          [ -f ${{ inputs.env-file }} ] && source ${{ inputs.env-file }}
           set +a
-          "$BUILD_COMMAND"
+          ${{ inputs.build-command }};
         working-directory: ${{ inputs.working-directory }}
 
       - uses: tj-actions/glob@v22
@@ -152,16 +146,11 @@ jobs:
       - name: prepend working directory before each source_map output
         if: ${{ inputs.deployment-target-url != '' }}
         id: source_maps
-        env:
-          UPLOAD_FOLDER: ${{ inputs.upload-folder }}
-          PATHS: ${{ steps.glob.outputs.paths }}
-          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         run: |
           # shellcheck disable=SC2043,SC2086
           ( echo -n "paths="
-            IFS=' ' read -r -a path_array <<< "$PATHS"
-            for i in "${path_array[@]}"; do
-              echo -n "$WORKING_DIRECTORY/$UPLOAD_FOLDER/$i "
+            for i in ${{ steps.glob.outputs.paths }}; do
+              echo -n "${{ inputs.working-directory }}/${{ inputs.upload-folder }}/${i} "
             done
             echo
           ) >> $GITHUB_OUTPUT
@@ -170,14 +159,11 @@ jobs:
       - name: prepend url before each source_map output
         if: ${{ inputs.deployment-target-url != '' }}
         id: minified_urls
-        env:
-          DEPLOYMENT_TARGET_URL: ${{ inputs.deployment-target-url }}
-          PATHS: ${{ steps.source_maps.outputs.paths }}
         run: |
           # shellcheck disable=SC2043,SC2086
           ( echo -n "urls="
-            for i in $PATHS; do
-              echo -n "$DEPLOYMENT_TARGET_URL/assets/$(basename ${i/.map}) "
+            for i in ${{ steps.source_maps.outputs.paths }}; do
+              echo -n "${{ inputs.deployment-target-url }}/assets/$(basename ${i/.map}) "
             done
             echo
           ) >> $GITHUB_OUTPUT
