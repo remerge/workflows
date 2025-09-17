@@ -49,7 +49,7 @@ jobs:
           # Export loaded secrets as environment variables
           export-env: true
         env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           JIRA_API_KEY: "op://secrets/github.dependabot_jira_api_key/password"
 
       - name: Create Jira issue for Dependabot PR
