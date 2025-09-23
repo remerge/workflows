@@ -97,6 +97,7 @@ jobs:
                 \"summary\": \"$JIRA_ISSUE_SUMMARY\"
               }
             }")
+          echo "Created issue response from Jira: $CREATED_ISSUE_RESPONSE"
           CREATED_ISSUE_URL=$(echo "$CREATED_ISSUE_RESPONSE" | jq -r .self)
           echo "Created Jira issue: $CREATED_ISSUE_URL"
           echo "CREATED_ISSUE_URL=$CREATED_ISSUE_URL" >> "$GITHUB_ENV"
@@ -106,9 +107,10 @@ jobs:
           JIRA_TRANSITION_ID: ${{ inputs.jira-transition-id }}
         run: |
           echo "Trying to transition issue $CREATED_ISSUE_URL"
-          curl --request POST \
+          MOVED_ISSUE_RESPONSE=$(curl --request POST \
             --url "$CREATED_ISSUE_URL/transitions" \
             --user "hal@remerge.io:$JIRA_API_KEY" \
             --header "Accept: application/json" \
             --header "Content-Type: application/json" \
-            --data "{\"transition\": {\"id\": \"$JIRA_TRANSITION_ID\"}}"
+            --data "{\"transition\": {\"id\": \"$JIRA_TRANSITION_ID\"}}")
+          echo "Moved issue response from Jira: $MOVED_ISSUE_RESPONSE"
