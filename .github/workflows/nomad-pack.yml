@@ -84,6 +84,7 @@ on:
         description: "OnePassword service account token"
 env:
   NOMAD_PACK_VERSION: "0.1.1"
+  NOMAD_VERSION: "1.10.3"
 
 jobs:
   slack-notify-start:
@@ -104,6 +105,12 @@ jobs:
         run: exit 1
       - uses: actions/checkout@v4
         id: checkout
+
+      - name: Setup `nomad`
+        uses: hashicorp/setup-nomad@main
+        id: setup
+        with:
+          version: ${{ env.NOMAD_VERSION }}
 
       - name: Setup `nomad-pack`
         uses: hashicorp/setup-nomad-pack@main
