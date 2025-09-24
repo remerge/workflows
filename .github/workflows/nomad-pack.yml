@@ -167,59 +167,61 @@ jobs:
         run: |
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
-      - name: Validate Nomad Configurations
-        id: nomad_validate
-        env:
-          NOMAD_ADDR: ${{ inputs.api_url }}
-          NOMAD_VAR_task_image: ${{ inputs.image_name }}
-          NOMAD_VAR_cluster: ${{ inputs.cluster }}
-          NOMAD_VAR_environment: ${{ inputs.environment }}
-        run: |
-          nomad-pack render ${{ inputs.pack_name }} \
-          --var='task_image=${{ inputs.image_name }}' \
-          --var='git_workflow_run_id=${{ github.run_id }}' \
-          --var='cluster=${{ inputs.cluster }}' \
-          --var='environment=${{ inputs.environment }}' \
-          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var-file=${{ inputs.variables_file_name }} \
-          --name=${{ inputs.name }} --registry=remerge-pack \
-          | tail -n +2 | nomad job validate -
+      - run: ping -c 2 10.32.32.103
 
-      - name: Run Nomad Pack Plan
-        id: nomad_pack_plan
-        if: ${{ inputs.run_plan }}
-        env:
-          NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
-          NOMAD_ADDR: ${{ inputs.api_url }}
-        # continue on error; default is `bash -e {0}`
-        shell: bash {0}
-        run: |
-          res=$(nomad-pack plan ${{ inputs.pack_name }} \
-          --var='task_image=${{ inputs.image_name }}' \
-          --var='git_workflow_run_id=${{ github.run_id }}' \
-          --var='cluster=${{ inputs.cluster }}' \
-          --var='environment=${{ inputs.environment }}' \
-          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var-file=${{ inputs.variables_file_name }} \
-          --name=${{ inputs.name }} --registry=remerge-pack  \
-          --exit-code-makes-changes=0)
+      # - name: Validate Nomad Configurations
+      #   id: nomad_validate
+      #   env:
+      #     NOMAD_ADDR: ${{ inputs.api_url }}
+      #     NOMAD_VAR_task_image: ${{ inputs.image_name }}
+      #     NOMAD_VAR_cluster: ${{ inputs.cluster }}
+      #     NOMAD_VAR_environment: ${{ inputs.environment }}
+      #   run: |
+      #     nomad-pack render ${{ inputs.pack_name }} \
+      #     --var='task_image=${{ inputs.image_name }}' \
+      #     --var='git_workflow_run_id=${{ github.run_id }}' \
+      #     --var='cluster=${{ inputs.cluster }}' \
+      #     --var='environment=${{ inputs.environment }}' \
+      #     --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
+      #     --var-file=${{ inputs.variables_file_name }} \
+      #     --name=${{ inputs.name }} --registry=remerge-pack \
+      #     | tail -n +2 | nomad job validate -
 
-          # save exit code for later
-          ret=$?
+      # - name: Run Nomad Pack Plan
+      #   id: nomad_pack_plan
+      #   if: ${{ inputs.run_plan }}
+      #   env:
+      #     NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
+      #     NOMAD_ADDR: ${{ inputs.api_url }}
+      #   # continue on error; default is `bash -e {0}`
+      #   shell: bash {0}
+      #   run: |
+      #     res=$(nomad-pack plan ${{ inputs.pack_name }} \
+      #     --var='task_image=${{ inputs.image_name }}' \
+      #     --var='git_workflow_run_id=${{ github.run_id }}' \
+      #     --var='cluster=${{ inputs.cluster }}' \
+      #     --var='environment=${{ inputs.environment }}' \
+      #     --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
+      #     --var-file=${{ inputs.variables_file_name }} \
+      #     --name=${{ inputs.name }} --registry=remerge-pack  \
+      #     --exit-code-makes-changes=0)
 
-          echo "${res}"
-          res="${res//'%'/'%25'}"
-          res="${res//$'\n'/'%0A'}"
-          res="${res//$'\r'/'%0D'}"
+      #     # save exit code for later
+      #     ret=$?
 
-          {
-            echo "stdout<<EOF"
-            echo "${res}"
-            echo "EOF"
-          } >> "${GITHUB_OUTPUT}"
+      #     echo "${res}"
+      #     res="${res//'%'/'%25'}"
+      #     res="${res//$'\n'/'%0A'}"
+      #     res="${res//$'\r'/'%0D'}"
 
-          # let the next step know how everything went
-          exit ${ret}
+      #     {
+      #       echo "stdout<<EOF"
+      #       echo "${res}"
+      #       echo "EOF"
+      #     } >> "${GITHUB_OUTPUT}"
+
+      #     # let the next step know how everything went
+      #     exit ${ret}
 
       # - name: PR Comment
       #   if: ${{ github.event_name == 'pull_request' && inputs.run_plan }}
@@ -234,45 +236,45 @@ jobs:
       #         body: `Nomad Plan for ${{ inputs.cluster }} \n ${{ steps.nomad_pack_plan.outputs.stdout }}`
       #       })
 
-      - name: Create github deployment
-        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
-        id: deployment
-        uses: chrnorm/deployment-action@v2
-        with:
-          environment: ${{ inputs.environment }}
-          token: "${{ github.token }}"
+  #     - name: Create github deployment
+  #       if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+  #       id: deployment
+  #       uses: chrnorm/deployment-action@v2
+  #       with:
+  #         environment: ${{ inputs.environment }}
+  #         token: "${{ github.token }}"
 
-      - name: Deploy to Nomad
-        id: nomad_deployment
-        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
-        env:
-          NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
-          NOMAD_ADDR: ${{ inputs.api_url }}
-        run: |
-          nomad-pack run ${{ inputs.pack_name }} \
-          --var='task_image=${{ inputs.image_name }}' \
-          --var='git_workflow_run_id=${{ github.run_id }}' \
-          --var='cluster=${{ inputs.cluster }}' \
-          --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var='environment=${{ inputs.environment }}' \
-          --var-file=${{ inputs.variables_file_name }} \
-          --name=${{ inputs.name }} --registry=remerge-pack
+  #     - name: Deploy to Nomad
+  #       id: nomad_deployment
+  #       if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+  #       env:
+  #         NOMAD_TOKEN: ${{ env.NOMAD_TOKEN }}
+  #         NOMAD_ADDR: ${{ inputs.api_url }}
+  #       run: |
+  #         nomad-pack run ${{ inputs.pack_name }} \
+  #         --var='task_image=${{ inputs.image_name }}' \
+  #         --var='git_workflow_run_id=${{ github.run_id }}' \
+  #         --var='cluster=${{ inputs.cluster }}' \
+  #         --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
+  #         --var='environment=${{ inputs.environment }}' \
+  #         --var-file=${{ inputs.variables_file_name }} \
+  #         --name=${{ inputs.name }} --registry=remerge-pack
 
-      - name: Update github deployment status
-        if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
-        uses: chrnorm/deployment-status@v2
-        with:
-          token: "${{ github.token }}"
-          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
-          state: "${{ steps.nomad_deployment.outcome }}"
+  #     - name: Update github deployment status
+  #       if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
+  #       uses: chrnorm/deployment-status@v2
+  #       with:
+  #         token: "${{ github.token }}"
+  #         deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+  #         state: "${{ steps.nomad_deployment.outcome }}"
 
-  slack-notify-finish:
-    if: ${{ always() && needs.nomad.result != 'skipped' && github.event_name != 'pull_request' && inputs.run_deploy  }}
-    needs: [nomad, slack-notify-start]
-    uses: remerge/workflows/.github/workflows/slack-notify.yml@main
-    with:
-      cluster: ${{ inputs.cluster }}
-      status: ${{ needs.nomad.result }}
-      update_ts: ${{ needs.slack-notify-start.outputs.ts }}
-    secrets:
-      slack_bot_token: ${{ secrets.slack_bot_token }}
+  # slack-notify-finish:
+  #   if: ${{ always() && needs.nomad.result != 'skipped' && github.event_name != 'pull_request' && inputs.run_deploy  }}
+  #   needs: [nomad, slack-notify-start]
+  #   uses: remerge/workflows/.github/workflows/slack-notify.yml@main
+  #   with:
+  #     cluster: ${{ inputs.cluster }}
+  #     status: ${{ needs.nomad.result }}
+  #     update_ts: ${{ needs.slack-notify-start.outputs.ts }}
+  #   secrets:
+  #     slack_bot_token: ${{ secrets.slack_bot_token }}
