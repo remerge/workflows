@@ -136,12 +136,14 @@ jobs:
           NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
           TS_OAUTH_CLIENT_ID: ${{ format('op://secrets/{0}/password', inputs.ts_client_id_secret_name) }}
           TS_OAUTH_SECRET: ${{ format('op://secrets/{0}/password', inputs.ts_client_secret_secret_name) }}
+          TS_OAUTH_KEY: ${{ format('op://secrets/{0}/password', inputs.ts_authkey_secret_name) }}
 
       - name: Tailscale
         uses: tailscale/github-action@v3
         with:
-          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ env.TS_OAUTH_SECRET }}
+          # oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          # oauth-secret: ${{ env.TS_OAUTH_SECRET }}
+          authkey: ${{ env.TS_OAUTH_KEY }}
           use-cache: "true"
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
