@@ -51,13 +51,19 @@ on:
         required: false
         type: string
         default: github_actions_tailscale_client_id
-        description:  The item name in one password "secrets" vault for the tailscale client id.
-      
+        description: The item name in one password "secrets" vault for the tailscale client id.
+
       ts_client_secret_secret_name:
         required: false
         type: string
         default: github_actions_tailscale_client_id
-        description:  The item name in one password "secrets" vault for the tailscale client secret.
+        description: The item name in one password "secrets" vault for the tailscale client secret.
+
+      ts_authkey_secret_name:
+        required: false
+        type: string
+        default: github_actions_tailscale_client_id
+        description: The item name in one password "secrets" vault for the tailscale client secret.
       code_version:
         required: false
         type: string
@@ -104,7 +110,7 @@ jobs:
         id: setup-nomad-pack
         with:
           version: ${{ env.NOMAD_PACK_VERSION }}
-  
+
       - name: Check for nomad_token input is set
         id: secret-check
         # perform secret check & put boolean result as an output
@@ -131,13 +137,12 @@ jobs:
           TS_OAUTH_CLIENT_ID: ${{ format('op://secrets/{0}/password', inputs.ts_client_id_secret_name) }}
           TS_OAUTH_SECRET: ${{ format('op://secrets/{0}/password', inputs.ts_client_secret_secret_name) }}
 
-
       - name: Tailscale
         uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ env.TS_OAUTH_SECRET }}
-          use-cache: 'true'
+          use-cache: "true"
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
