@@ -50,13 +50,13 @@ on:
       ts_client_id_secret_name:
         required: false
         type: string
-        default: github_actions_tailscale_client_id
+        default: gnetwork.tailscale_oauth_github_client_id
         description: The item name in one password "secrets" vault for the tailscale client id.
 
       ts_client_secret_secret_name:
         required: false
         type: string
-        default: github_actions_tailscale_client_id
+        default: network.tailscale_oauth_github_secret
         description: The item name in one password "secrets" vault for the tailscale client secret.
 
       ts_authkey_secret_name:
@@ -132,7 +132,7 @@ jobs:
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
           NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
-          TS_OAUTH_CLIENT_ID: ${{ format('op://secrets/{0}/username', inputs.ts_client_secret_secret_name) }}
+          TS_OAUTH_CLIENT_ID: ${{ format('op://secrets/{0}/password', inputs.ts_client_id_secret_name) }}
           TS_OAUTH_SECRET: ${{ format('op://secrets/{0}/password', inputs.ts_client_secret_secret_name) }}
           # TS_OAUTH_KEY: ${{ format('op://secrets/{0}/password', inputs.ts_authkey_secret_name) }}
 
@@ -143,7 +143,7 @@ jobs:
           oauth-secret: ${{ env.TS_OAUTH_SECRET }}
           # authkey: ${{ env.TS_OAUTH_KEY }}
           use-cache: "true"
-          tags: "tag:tailscale"
+          tags: "tag:github"
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
