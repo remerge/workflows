@@ -87,15 +87,6 @@ env:
   NOMAD_VERSION: "1.10.3"
 
 jobs:
-  slack-notify-start:
-    uses: remerge/workflows/.github/workflows/slack-notify.yml@main
-    if: ${{ github.event_name != 'pull_request' && inputs.run_deploy }}
-    with:
-      cluster: ${{ inputs.cluster }}
-      status: running
-    secrets:
-      slack_bot_token: ${{ secrets.slack_bot_token }}
-
   nomad:
     runs-on: ubuntu-latest
     steps:
