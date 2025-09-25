@@ -158,7 +158,7 @@ jobs:
         run: |
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
       - run: |
-          curl -vvv http://grafana.rmge.net/
+          curl -vvv http://grafana.rmge.net:4646/
 
       # - name: Validate Nomad Configurations
       #   id: nomad_validate
