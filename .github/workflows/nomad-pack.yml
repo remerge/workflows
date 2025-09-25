@@ -50,7 +50,7 @@ on:
       ts_client_id_secret_name:
         required: false
         type: string
-        default: gnetwork.tailscale_oauth_github_client_id
+        default: network.tailscale_oauth_github_client_id
         description: The item name in one password "secrets" vault for the tailscale client id.
 
       ts_client_secret_secret_name:
@@ -134,7 +134,6 @@ jobs:
           NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
           TS_OAUTH_CLIENT_ID: ${{ format('op://secrets/{0}/password', inputs.ts_client_id_secret_name) }}
           TS_OAUTH_SECRET: ${{ format('op://secrets/{0}/password', inputs.ts_client_secret_secret_name) }}
-          # TS_OAUTH_KEY: ${{ format('op://secrets/{0}/password', inputs.ts_authkey_secret_name) }}
 
       - name: Tailscale
         uses: tailscale/github-action@v3
