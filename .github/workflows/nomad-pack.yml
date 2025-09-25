@@ -143,6 +143,7 @@ jobs:
           # oauth-secret: ${{ env.TS_OAUTH_SECRET }}
           authkey: ${{ env.TS_OAUTH_KEY }}
           use-cache: "true"
+          tags: "tag:tailscale"
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -157,9 +158,8 @@ jobs:
       - name: Add Nomad pack registry
         run: |
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
-
       - run: |
-          tailscale status
+          tailscale status -json
           ping -c 2 10.32.32.103
 
       # - name: Validate Nomad Configurations
