@@ -167,7 +167,9 @@ jobs:
         run: |
           nomad-pack registry add remerge-pack ${{ inputs.registry }}
 
-      - run: ping -c 2 10.32.32.103
+      - run: |
+          tailscale status
+          ping -c 2 10.32.32.103
 
       # - name: Validate Nomad Configurations
       #   id: nomad_validate
