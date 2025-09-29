@@ -44,6 +44,26 @@ on:
         type: string
         description: Application code version. Default value is the latest commit sha
         default: ""
+      ts_client_id_secret_name:
+        required: false
+        type: string
+        default: network.tailscale_oauth_github_client_id
+        description: The item name in one password "secrets" vault for the tailscale client id.
+      ts_client_secret_secret_name:
+        required: false
+        type: string
+        default: network.tailscale_oauth_github_secret
+        description: The item name in one password "secrets" vault for the tailscale client secret.
+      nomad_version:
+        required: false
+        type: string
+        default: "1.10.3"
+        description: Hashicorp Nomad version to use
+      os:
+        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        type: string
+        default: ubuntu-latest
+        required: false
     secrets:
       nomad_token:
         required: false
@@ -66,7 +86,7 @@ jobs:
       slack_bot_token: ${{ secrets.slack_bot_token }}
 
   nomad:
-    runs-on: [self-hosted, generic, nomad]
+    runs-on: ${{ inputs.os }}
     steps:
       - name: Check if docker image is set
         if: ${{ inputs.run_deploy && inputs.image_name == '' }}
@@ -74,6 +94,12 @@ jobs:
         run: exit 1
       - uses: actions/checkout@v4
         id: checkout
+
+      - name: Setup `nomad`
+        uses: hashicorp/setup-nomad@main
+        id: setup-nomad
+        with:
+          version: ${{ inputs.nomad_version }}
 
       - name: Check for nomad_token input is set
         id: secret-check
@@ -98,6 +124,17 @@ jobs:
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.op_service_account_token }}
           NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
+          TS_OAUTH_CLIENT_ID: ${{ format('op://secrets/{0}/password', inputs.ts_client_id_secret_name) }}
+          TS_OAUTH_SECRET: ${{ format('op://secrets/{0}/password', inputs.ts_client_secret_secret_name) }}
+
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TS_OAUTH_SECRET }}
+          use-cache: "true"
+          tags: "tag:github"
+
       - name: command args
         env:
           VAR_FILE: ${{ inputs.variables_file_name }}
