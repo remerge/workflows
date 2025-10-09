@@ -260,6 +260,16 @@ jobs:
             type=sha
             ${{ inputs.tag }}
 
+      - name: go vendor cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vendor
+          key: ${{ runner.os }}-go-vendor-${{ hashFiles('**/go.sum') }}
+
+      - name: create dummy vendor dir
+        run: |
+          mkdir -p ${{ github.workspace }}/vendor
+
       - name: Build (and push) Docker image
         uses: docker/build-push-action@v5
         with:
