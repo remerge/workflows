@@ -279,8 +279,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
-          cache-from: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:buildcache
-          cache-to: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:buildcache,mode=max
+          cache-from: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/go:buildcache
+          cache-to: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/go:buildcache,mode=max
 
       - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         if: ${{ always() && inputs.slack-thread-ts != '' }}
