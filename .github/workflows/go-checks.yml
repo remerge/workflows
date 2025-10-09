@@ -84,6 +84,11 @@ jobs:
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-mod-${{ github.job }}-
+      - name: go vendor cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vendor
+          key: ${{ runner.os }}-go-vendor-${{ hashFiles('**/go.sum') }}
       - name: go tools cache
         uses: actions/cache@v4
         with:
