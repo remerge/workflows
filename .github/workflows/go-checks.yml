@@ -1,6 +1,5 @@
 ---
-# Runs common checks for Go package: lint (fmt, modules, static, shadowing),
-# tests and race.
+# Runs common checks for Go package: tests and race
 
 name: Go checks
 
@@ -22,16 +21,6 @@ on:
         required: false
         default: false
         description: "Run race detector"
-      no-lint-gen:
-        type: boolean
-        required: false
-        default: false
-        description: "Do not run go generate lint"
-      lint-gen-ruby-version:
-        type: string
-        required: false
-        default: ""
-        description: "Set ruby version to install for go generate"
       compose-file:
         type: string
         required: false
@@ -87,11 +76,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
-      - uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-          ruby-version: "${{ inputs.lint-gen-ruby-version }}"
-        if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' }}"
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -104,8 +88,6 @@ jobs:
           git config --global url."git@github.com:".insteadOf "https://github.com/"
         if: "${{ inputs.goprivate != '' }}"
 
-      - run: make gen && git diff --exit-code --name-only HEAD
-        if: "${{ !inputs.no-lint-gen }}"
       - run: 'docker compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
         if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
       - run: make test-nocache
