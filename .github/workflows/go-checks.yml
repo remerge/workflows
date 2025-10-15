@@ -22,11 +22,6 @@ on:
         required: false
         default: false
         description: "Run race detector"
-      lint-target:
-        type: string
-        required: false
-        default: "lint"
-        description: "Lint Make target"
       no-lint-gen:
         type: boolean
         required: false
@@ -109,7 +104,6 @@ jobs:
           git config --global url."git@github.com:".insteadOf "https://github.com/"
         if: "${{ inputs.goprivate != '' }}"
 
-      - run: make ${{ inputs.lint-target }}
       - run: make gen && git diff --exit-code --name-only HEAD
         if: "${{ !inputs.no-lint-gen }}"
       - run: 'docker compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
