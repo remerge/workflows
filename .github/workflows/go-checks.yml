@@ -64,6 +64,7 @@ on:
 
 env:
   GOPRIVATE: ${{ inputs.goprivate }}
+  GOLANGCI_LINT_CACHE: ${{ github.workspace }}/.golangci-lint-cache
 
 jobs:
   go-test:
@@ -92,6 +93,14 @@ jobs:
           key: ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
           restore-keys: |
             ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
+      - name: golangci-lint cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/.golangci-lint-cache
+          key:  ${{ runner.os }}-go-mod-golangci-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-mod-golangci-
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
