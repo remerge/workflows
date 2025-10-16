@@ -21,6 +21,21 @@ on:
         required: false
         default: false
         description: "Run race detector"
+      lint-target:
+        type: string
+        required: false
+        default: "lint"
+        description: "Lint Make target"
+      no-lint-gen:
+        type: boolean
+        required: false
+        default: false
+        description: "Do not run go generate lint"
+      lint-gen-ruby-version:
+        type: string
+        required: false
+        default: ""
+        description: "Set ruby version to install for go generate"
       compose-file:
         type: string
         required: false
