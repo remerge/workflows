@@ -215,7 +215,7 @@ jobs:
             ${{ inputs.gen-cache-path}}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: useblacksmith/setup-docker-builder@v1
 
       # Auth with gar_service_account_key
       # to be deprecated
@@ -261,7 +261,7 @@ jobs:
             ${{ inputs.tag }}
 
       - name: Build (and push) Docker
-        uses: docker/build-push-action@v5
+        uses: useblacksmith/build-push-action@v2
         with:
           context: ${{ inputs.context }}
           push: ${{ inputs.push }}
@@ -279,8 +279,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
-          cache-from: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/go:buildcache
-          cache-to: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/go:buildcache,mode=max
+          # cache-from: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/go:buildcache
+          # cache-to: type=registry,ref=${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/go:buildcache,mode=max
 
       - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         if: ${{ always() && inputs.slack-thread-ts != '' }}
