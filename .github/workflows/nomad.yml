@@ -125,7 +125,6 @@ jobs:
           NOMAD_TOKEN: ${{ format('op://secrets/{0}/password', inputs.op_secret_name) }}
 
       - name: Load tailscale from 1password
-        if: ${{ inputs.op_secret_name }}
         uses: 1password/load-secrets-action@v2
         with:
           export-env: true
