@@ -158,7 +158,7 @@ jobs:
       REPOSITORY: ${{ inputs.repository }}
       REPO: ${{ inputs.repo }}
     outputs:
-      image: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.compute_hash.outputs.image }}
     steps:
       - name: Set Variables
         run: |
@@ -251,6 +251,18 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth_with_workload_identity.outputs.access_token }}
 
+      - name: Compute hash and check if image exists
+        id: compute_hash
+        run: |
+          ./compute_hash.sh \
+            "${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}" \
+            "k8s,docs,**/*.md"
+
+      - name: Print results
+        run: |
+          echo "Computed tag: ${{ steps.compute_hash.outputs.tag }}"
+          echo "Image exists: ${{ steps.compute_hash.outputs.exists }}"
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -262,6 +274,7 @@ jobs:
 
       - name: Build (and push) Docker image
         uses: docker/build-push-action@v5
+        if: steps.compute_hash.outputs.exists == 'false'
         with:
           context: ${{ inputs.context }}
           push: ${{ inputs.push }}
@@ -275,7 +288,7 @@ jobs:
             BUILD_COMMIT=${{ github.sha }}
             BUILD_REPO=${{ github.event.repository.name }}
             BUILD_ID=${{ github.run_id }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.compute_hash.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
