@@ -254,7 +254,9 @@ jobs:
       - name: Compute hash and check if image exists
         id: compute_hash
         run: |
-          ./compute_hash.sh \
+          ls
+          pwd
+          ./scripts/compute_hash.sh \
             "${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}" \
             "k8s,docs,**/*.md"
 
