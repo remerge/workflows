@@ -251,21 +251,24 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth_with_workload_identity.outputs.access_token }}
 
+      - name: Copy script to workspace
+        run: |
+          mkdir -p ./___reusable_repo
+
       - name: Checkout reusable workflow repo
         uses: actions/checkout@v4
         with:
           repository: ${{ github.action_repository }}
           ref: ${{ github.action_ref }}
-          path: $GITHUB_WORKSPACE/reusable_repo
+          path: ./___reusable_repo
 
       - name: Compute hash and check if image exists
         id: compute_hash
         run: |
-          env
-          ls "$GITHUB_WORKSPACE/reusable_repo"
-          $GITHUB_WORKSPACE/reusable_repocompute_hash.sh \
+          ls
+          ./___reusable_repo/compute_hash.sh \
             "${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}" \
-            "k8s,docs,**/*.md"
+            "___reusable_repo*,k8s,docs,**/*.md"
 
       - name: Print results
         run: |
