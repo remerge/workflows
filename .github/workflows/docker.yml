@@ -262,8 +262,8 @@ jobs:
           #     "europe-west4-docker.pkg.dev/artifact-registry-ff9b/github-actions/default" \
           #     "k8s,docs,**/*.md"
 
-          IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}"
-          EXCLUDES="k8s,docs,**/*.md"
+          export IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}"
+          export EXCLUDES="k8s,docs,**/*.md"
 
           # Enable extended globbing and recursive globs (**)
           shopt -s globstar extglob nullglob
@@ -292,13 +292,13 @@ jobs:
 
           # Export values for GitHub Actions (if running inside a workflow)
           if [[ -n ${GITHUB_OUTPUT:-} ]]; then
-              echo "image=$IMAGE:$TAG" >>"$GITHUB_OUTPUT"
-              echo "exists=$EXISTS" >>"$GITHUB_OUTPUT"
+              echo "image=${IMAGE}:${TAG}" >>"$GITHUB_OUTPUT"
+              echo "exists=${EXISTS}" >>"$GITHUB_OUTPUT"
           fi
 
           # Also print for local debugging
-          echo "image=$IMAGE:$TAG"
-          echo "EXISTS=$EXISTS"
+          echo "image=${IMAGE}:${TAG}"
+          echo "EXISTS=${EXISTS}"
 
 
       - name: Print results
