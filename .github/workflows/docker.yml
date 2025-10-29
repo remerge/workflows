@@ -256,14 +256,14 @@ jobs:
         with:
           repository: ${{ github.action_repository }}
           ref: ${{ github.action_ref }}
-          path: "/tmp/"
+          path: $GITHUB_WORKSPACE/reusable_repo
 
       - name: Compute hash and check if image exists
         id: compute_hash
         run: |
           env
-          ls /tmp/
-          /tmp/scripts/compute_hash.sh \
+          ls "$GITHUB_WORKSPACE/reusable_repo"
+          $GITHUB_WORKSPACE/reusable_repocompute_hash.sh \
             "${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}" \
             "k8s,docs,**/*.md"
 
