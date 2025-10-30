@@ -257,6 +257,7 @@ jobs:
           #!/usr/bin/env bash
           set -euo pipefail
           ls -lah
+          git status
 
           EXCLUDES="**/*.md,.git/*"
 
