@@ -6,147 +6,116 @@ on:
     inputs:
       registry:
         type: string
-        required: false
-        default: "europe-west4-docker.pkg.dev"
-        description: "Google Artifact registry"
+        default: europe-west4-docker.pkg.dev
+        description: Google Artifact Registry
 
       project:
         type: string
-        required: false
-        default: "artifact-registry-ff9b"
-        description: "GCP project"
+        default: artifact-registry-ff9b
+        description: GCP project
 
-      # to be deprecated soon
       repo:
         type: string
         required: false
-        description: "GCP project repository"
+        description: Legacy GCP repository name (deprecated)
 
       repository:
         type: string
         required: false
-        description: "GCP project repository"
+        description: GCP Artifact Registry repository name
 
       image:
         type: string
         required: true
-        description: "Image name"
+        description: Image name
 
       tag:
         type: string
         required: false
-        description: "Version tag"
+        description: Optional version tag (defaults to content hash)
 
       context:
         type: string
-        required: false
         default: .
-        description: "Docker build context"
+        description: Docker build context
 
       target:
         type: string
         required: false
-        description: "Docker build target"
+        description: Docker build target
 
       dockerfile:
         type: string
-        required: false
         default: Dockerfile
-        description: "Dockerfile"
+        description: Dockerfile path
 
       build-args:
         type: string
         required: false
-        description: "Docker build arguments"
+        description: Additional Docker build arguments
 
       push:
         type: boolean
-        required: false
         default: true
-        description: "Whether to push the image to the registry"
+        description: Whether to push the image
 
       os:
-        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
         type: string
         default: ubuntu-latest
-        required: false
+        description: OS runner
 
       gen-cache-key:
-        description: |
-          "Key of a cache where previous steps generated files. If your project
-          needs to generate files before building the Docker image, this has to
-          be done in a job before calling this reusable workflow. This is a limit
-          of GHA, as reusable workflows can't run as a step in a job, but always
-          run as their own job. To share data between jobs, `actions/cache@v4`
-          should be used to create a cache. This workflow can then access the cache
-          and hence the generated files."
         type: string
         required: false
+        description: Optional key for generated build cache
 
       gen-cache-path:
-        description: |
-          "Cached directory where previous steps generated files. This is to be
-          provided in conjunction with `gen-cache-key` and tells this workflow
-          which directory to mount the cache to."
         type: string
         required: false
+        description: Directory to restore cache to
 
       workload-identity-provider:
         type: string
-        required: false # set to true after migration
-        description: "Google Cloud Workload Identity provider"
+        required: false
+        description: GCP Workload Identity Provider
 
       service-account:
         type: string
-        required: false # set to true after migration
-        description: "Google Cloud default service account"
+        required: false
+        description: GCP Service Account email
 
       slack-channel:
         type: string
         required: false
-        description: "Slack channel to post to"
+        description: Slack channel to post updates
 
       slack-thread-ts:
         type: string
         required: false
-        description: "Slack thread timestamp"
+        description: Slack thread timestamp
 
       fetch-depth:
         type: number
-        required: false
         default: 1
-        description: "Fetch depth for git checkout"
+        description: Git fetch depth for checkout
 
     outputs:
       image:
-        description: "Full path of produced image"
+        description: Full path of the built image
         value: ${{ jobs.build-and-push.outputs.image }}
 
     secrets:
       build-secrets:
         required: false
-        description: |
-          "https://docs.docker.com/build/ci/github-actions/secrets/
-          List of secrets to expose to the build
-          e.g PY_KEY=SUPER_SECRET_VALUE
-          "
-      # to be deprecated soon
+      ssh-private-key:
+        required: false
       deploy_user_ssh_key:
         required: false
-        description: "Private key for deploy user to access private repos"
-
-      ssh-private-key:
-        required: false # set to true after migration
-        description: "SSH key for access to private repositories"
-
-      # to be deprecated soon
       gar_service_account_key:
         required: false
-        description: "Google Artifact Registry service account key (JSON)"
-
       slack-token:
         required: false
-        description: "Slack token for posting messages"
+
 jobs:
   build-and-push:
     runs-on: ${{ inputs.os }}
@@ -157,32 +126,33 @@ jobs:
       DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
       REPOSITORY: ${{ inputs.repository }}
       REPO: ${{ inputs.repo }}
+
     outputs:
       image: ${{ steps.compute_hash.outputs.image }}
+
     steps:
       - name: Set Variables
         run: |
+          set -euo pipefail
           if [ -n "$WORKLOAD_IDENTITY_PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ]; then
-            use_workload_identity="true"
+            echo "use_workload_identity=true" >> "$GITHUB_ENV"
           else
-            use_workload_identity="false"
+            echo "use_workload_identity=false" >> "$GITHUB_ENV"
           fi
-          echo "use_workload_identity=$use_workload_identity" >> "$GITHUB_ENV"
 
-          use_deprecated_ssh_var="false"
           if [ -z "$SSH_PRIVATE_KEY" ] && [ -n "$DEPLOY_USER_SSH_KEY" ]; then
-            use_deprecated_ssh_var="true"
+            echo "use_deprecated_ssh_var=true" >> "$GITHUB_ENV"
           elif [ -z "$SSH_PRIVATE_KEY" ] && [ -z "$DEPLOY_USER_SSH_KEY" ]; then
-            echo "ssh-private-key or deploy_user_ssh_key must be set."
+            echo "❌ ssh-private-key or deploy_user_ssh_key must be set." >&2
             exit 1
+          else
+            echo "use_deprecated_ssh_var=false" >> "$GITHUB_ENV"
           fi
-          echo "use_deprecated_ssh_var=$use_deprecated_ssh_var" >> "$GITHUB_ENV"
 
           if [ -z "$REPOSITORY" ] && [ -n "$REPO" ]; then
-            # Sanitize REPO for safe environment variable assignment
             echo "REPOSITORY=$(echo "$REPO" | tr -d '\n\r')" >> "$GITHUB_ENV"
           elif [ -z "$REPOSITORY" ] && [ -z "$REPO" ]; then
-            echo "repository or repo must be set."
+            echo "❌ repository or repo must be set." >&2
             exit 1
           fi
 
@@ -190,62 +160,49 @@ jobs:
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
 
-      - if: ${{ env.use_deprecated_ssh_var == 'false' }}
-        name: Set up SSH
+      - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.ssh-private-key }}
-
-      - if: ${{ env.use_deprecated_ssh_var == 'true' }}
-        name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.deploy_user_ssh_key }}
+          ssh-private-key: ${{ env.use_deprecated_ssh_var == 'true' && secrets.deploy_user_ssh_key || secrets.ssh-private-key }}
 
       - name: Update Git config
         run: |
-          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
+          mkdir -p ~/.ssh
+          curl -sL https://api.github.com/meta | jq -r '.ssh_keys[]' | sed 's/^/github.com /' >> ~/.ssh/known_hosts
           git config --global url."git@github.com:".insteadOf "https://github.com/"
 
       - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
         uses: actions/cache@v4
         with:
-          key: ${{ inputs.gen-cache-key}}
-          path: |
-            ${{ inputs.gen-cache-path}}
+          key: ${{ inputs.gen-cache-key }}
+          path: ${{ inputs.gen-cache-path }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-      # Auth with gar_service_account_key
-      # to be deprecated
-      - if: ${{ env.use_workload_identity == 'false' }}
-        name: Authenticate with Google Cloud (Service Account Key)
+      - name: Authenticate with Google Cloud (Service Account Key)
+        if: env.use_workload_identity == 'false'
         id: auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.gar_service_account_key }}
 
-      - name: Docker login (Google Crediential file)
-        if: ${{ env.use_workload_identity == 'false' }}
+      - name: Docker login (Google Credential file)
+        if: env.use_workload_identity == 'false'
         run: |
-          docker login -u _json_key \
-          --password-stdin ${{ inputs.registry }} < ${{ steps.auth.outputs.credentials_file_path }}
+          docker login -u _json_key --password-stdin ${{ inputs.registry }} < "${{ steps.auth.outputs.credentials_file_path }}"
 
-      # Auth with workload-identity
-      # to become defacto
-      - id: auth_with_workload_identity
-        name: Authenticate with Google Cloud (Workload Identity)
-        if: ${{ env.use_workload_identity == 'true' }}
+      - name: Authenticate with Google Cloud (Workload Identity)
+        id: auth_with_workload_identity
+        if: env.use_workload_identity == 'true'
         uses: google-github-actions/auth@v2
         with:
           token_format: access_token
           workload_identity_provider: ${{ inputs.workload-identity-provider }}
           service_account: ${{ inputs.service-account }}
 
-      - uses: docker/login-action@v3
-        name: Docker login (Google oauth2accesstoken)
-        if: ${{ env.use_workload_identity == 'true' }}
+      - name: Docker login (Google oauth2accesstoken)
+        if: env.use_workload_identity == 'true'
+        uses: docker/login-action@v3
         with:
           registry: ${{ inputs.registry }}
           username: oauth2accesstoken
@@ -258,25 +215,18 @@ jobs:
           set -euo pipefail
           EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
 
-          # Enable extended globbing and recursive globs (**)
           shopt -s globstar extglob nullglob
-
-          # Build find command dynamically
           FIND_CMD=(find . -type f)
 
           IFS=',' read -ra PATTERNS <<<"$EXCLUDES"
           for pattern in "${PATTERNS[@]}"; do
-              # Trim whitespace
               pattern=$(echo "$pattern" | xargs)
               [[ -n $pattern ]] && FIND_CMD+=(! -path "./$pattern")
           done
 
-          # Compute deterministic content-based hash
           TAG=$("${FIND_CMD[@]}" -exec sha256sum {} \; | sort | sha256sum | cut -d' ' -f1)
-
           IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${TAG}"
-  
-          # Check if image exists in registry
+
           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
               echo "✅ Image $IMAGE already exists - skipping build"
               EXISTS="true"
@@ -285,33 +235,21 @@ jobs:
               EXISTS="false"
           fi
 
-          # Export values for GitHub Actions (if running inside a workflow)
-          if [[ -n ${GITHUB_ENV:-} ]]; then
-              echo "image=${IMAGE}" >>"$GITHUB_ENV"
-              echo "image_exists=${EXISTS}" >>"$GITHUB_ENV"
-              echo "tag=${TAG}" >>"$GITHUB_ENV"
-          fi
-
-          if [[ -n ${GITHUB_OUTPUT:-} ]]; then
-              echo "image=${IMAGE}" >>"$GITHUB_OUTPUT"
-          fi
-
-          # Also print for local debugging
-          echo "IMAGE=${IMAGE}"
-          echo "EXISTS=${EXISTS}"
-
-
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_ENV"
+          echo "image_exists=${EXISTS}" >> "$GITHUB_ENV"
+          echo "tag=${TAG}" >> "$GITHUB_ENV"
 
       - name: Print results
         run: |
-          echo "Computed tag: ${{ env.image }}"
+          echo "Computed image: ${{ env.image }}"
           echo "Image exists: ${{ env.image_exists }}"
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}
+          images: ${{ env.image }}
           tags: |
             type=sha
             value=${{ inputs.tag }}
@@ -341,8 +279,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
+      - name: Notify Slack
         if: ${{ always() && inputs.slack-thread-ts != '' }}
+        uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         with:
           token: ${{ secrets.slack-token }}
           channel: ${{ inputs.slack-channel }}
