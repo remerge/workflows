@@ -259,7 +259,7 @@ jobs:
           ls -lah
           git status
 
-          EXCLUDES="**/*.md,.git/*"
+          EXCLUDES="**/*.md,.git/*,gha-creds*"
 
           # Enable extended globbing and recursive globs (**)
           shopt -s globstar extglob nullglob
