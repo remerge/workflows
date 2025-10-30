@@ -314,7 +314,7 @@ jobs:
           images: ${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}
           tags: |
             type=sha
-            ${{ inputs.tag }}
+            value=${{ inputs.tag }}
 
       - name: Build (and push) Docker image
         uses: docker/build-push-action@v5
@@ -334,7 +334,7 @@ jobs:
             BUILD_ID=${{ github.run_id }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.tag }}
+            ${{ env.image }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
