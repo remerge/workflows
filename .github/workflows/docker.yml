@@ -256,6 +256,7 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
+          ls -lah
 
           EXCLUDES="**/*.md,.git/*"
 
@@ -299,6 +300,7 @@ jobs:
           # Also print for local debugging
           echo "IMAGE=${IMAGE}"
           echo "EXISTS=${EXISTS}"
+
 
 
       - name: Print results
