@@ -289,6 +289,7 @@ jobs:
           if [[ -n ${GITHUB_ENV:-} ]]; then
               echo "image=${IMAGE}" >>"$GITHUB_ENV"
               echo "image_exists=${EXISTS}" >>"$GITHUB_ENV"
+              echo "tag=${TAG}" >>"$GITHUB_ENV"
           fi
 
           if [[ -n ${GITHUB_OUTPUT:-} ]]; then
@@ -331,7 +332,9 @@ jobs:
             BUILD_COMMIT=${{ github.sha }}
             BUILD_REPO=${{ github.event.repository.name }}
             BUILD_ID=${{ github.run_id }}
-          tags: ${{ steps.compute_hash.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.tag }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
