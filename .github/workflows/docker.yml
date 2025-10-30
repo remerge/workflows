@@ -289,7 +289,7 @@ jobs:
           # Export values for GitHub Actions (if running inside a workflow)
           if [[ -n ${GITHUB_ENV:-} ]]; then
               echo "image=${IMAGE}" >>"$GITHUB_ENV"
-              echo "exists=${EXISTS}" >>"$GITHUB_ENV"
+              echo "image_exists=${EXISTS}" >>"$GITHUB_ENV"
           fi
 
           if [[ -n ${GITHUB_OUTPUT:-} ]]; then
@@ -305,7 +305,7 @@ jobs:
         run: |
           ls
           echo "Computed tag: ${{ env.image }}"
-          echo "Image exists: ${{ env.exists }}"
+          echo "Image exists: ${{ env.image_exists }}"
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -318,7 +318,7 @@ jobs:
 
       - name: Build (and push) Docker image
         uses: docker/build-push-action@v5
-        if: steps.compute_hash.outputs.exists == 'false'
+        if: env.image_exists == 'false'
         with:
           context: ${{ inputs.context }}
           push: ${{ inputs.push }}
