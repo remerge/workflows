@@ -21,7 +21,7 @@ on:
         type: boolean
         required: false
         default: false
-        description: "Run race detector"
+        description: "DEPRECATED: test target to cover race checks"
       lint-target:
         type: string
         required: false
@@ -119,7 +119,5 @@ jobs:
       - run: 'docker compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
         if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
       - run: make test-nocache
-      - run: make race-nocache
-        if: "${{ !inputs.no-race }}"
       - run: 'docker compose -f "${{ inputs.compose-file }}" down'
         if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
