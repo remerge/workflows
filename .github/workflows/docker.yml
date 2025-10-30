@@ -276,7 +276,7 @@ jobs:
           TAG=$("${FIND_CMD[@]}" -exec sha256sum {} \; | sort | sha256sum | cut -d' ' -f1)
 
           IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${TAG}"
-          ls
+  
           # Check if image exists in registry
           if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
               echo "✅ Image $IMAGE already exists - skipping build"
@@ -303,6 +303,7 @@ jobs:
 
       - name: Print results
         run: |
+          ls
           echo "Computed tag: ${{ env.image }}"
           echo "Image exists: ${{ env.exists }}"
 
