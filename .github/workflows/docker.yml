@@ -256,10 +256,7 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
-          ls -lah
-          git status
-
-          EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy"
+          EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
 
           # Enable extended globbing and recursive globs (**)
           shopt -s globstar extglob nullglob
@@ -309,41 +306,41 @@ jobs:
           echo "Computed tag: ${{ env.image }}"
           echo "Image exists: ${{ env.image_exists }}"
 
-      # - name: Extract metadata (tags, labels) for Docker
-      #   id: meta
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}
-      #     tags: |
-      #       type=sha
-      #       ${{ inputs.tag }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}
+          tags: |
+            type=sha
+            ${{ inputs.tag }}
 
-      # - name: Build (and push) Docker image
-      #   uses: docker/build-push-action@v5
-      #   if: env.image_exists == 'false'
-      #   with:
-      #     context: ${{ inputs.context }}
-      #     push: ${{ inputs.push }}
-      #     file: ${{ inputs.dockerfile }}
-      #     secrets: ${{ secrets.build-secrets }}
-      #     build-args: |
-      #       ${{ inputs.build-args }}
-      #       CI_COMMIT=${{ github.sha }}
-      #       CI_REPO=${{ github.event.repository.name }}
-      #       CI_NUM=${{ github.run_id }}
-      #       BUILD_COMMIT=${{ github.sha }}
-      #       BUILD_REPO=${{ github.event.repository.name }}
-      #       BUILD_ID=${{ github.run_id }}
-      #     tags: ${{ steps.compute_hash.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
-      #     target: ${{ inputs.target }}
-      #     ssh: default
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
+      - name: Build (and push) Docker image
+        uses: docker/build-push-action@v5
+        if: env.image_exists == 'false'
+        with:
+          context: ${{ inputs.context }}
+          push: ${{ inputs.push }}
+          file: ${{ inputs.dockerfile }}
+          secrets: ${{ secrets.build-secrets }}
+          build-args: |
+            ${{ inputs.build-args }}
+            CI_COMMIT=${{ github.sha }}
+            CI_REPO=${{ github.event.repository.name }}
+            CI_NUM=${{ github.run_id }}
+            BUILD_COMMIT=${{ github.sha }}
+            BUILD_REPO=${{ github.event.repository.name }}
+            BUILD_ID=${{ github.run_id }}
+          tags: ${{ steps.compute_hash.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          target: ${{ inputs.target }}
+          ssh: default
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
-      #   if: ${{ always() && inputs.slack-thread-ts != '' }}
-      #   with:
-      #     token: ${{ secrets.slack-token }}
-      #     channel: ${{ inputs.slack-channel }}
-      #     thread_ts: ${{ inputs.slack-thread-ts }}
+      - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
+        if: ${{ always() && inputs.slack-thread-ts != '' }}
+        with:
+          token: ${{ secrets.slack-token }}
+          channel: ${{ inputs.slack-channel }}
+          thread_ts: ${{ inputs.slack-thread-ts }}
