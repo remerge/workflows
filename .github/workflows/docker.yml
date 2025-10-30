@@ -321,7 +321,7 @@ jobs:
         if: env.image_exists == 'false'
         with:
           context: ${{ inputs.context }}
-          push: ${{ inputs.push }}
+          push: true
           file: ${{ inputs.dockerfile }}
           secrets: ${{ secrets.build-secrets }}
           build-args: |
