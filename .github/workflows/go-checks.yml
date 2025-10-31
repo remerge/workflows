@@ -84,26 +84,35 @@ jobs:
           #!/usr/bin/env bash
           set -euo pipefail
 
-          # Define "irrelevant" files that should NOT trigger a run
-          EXCLUDED_PATTERNS=(
-            "README.md"
-            "nomad.hcl"
-            ".deploy/**"
-            "*nomad.variables.hcl"
-            ".github/workflows/go-app.yml"
-            ".yamllint.yaml"
-            "Dockerfile"
-            "Dockerfile-2"
-            "no_bids.go"
-          )
+          # Enable extended and recursive globbing for better matching
+          shopt -s globstar extglob nullglob
 
+          # Define files or glob patterns considered "irrelevant"
+          EXCLUDED_PATTERNS=(
+            "nomad.hcl"
+            "*nomad.variables.hcl"
+            "Dockerfile"
+            "no_bids.go"
+
+             "**.md"
+             "nomad.hcl"
+             ".deploy/**"
+             "*nomad.variables.hcl"
+             ".github/workflows/go-app.yml"
+             ".yamllint.yaml"
+             "Dockerfile"
+          )
           echo "🔍 Changed files:"
           echo "${{ steps.changed.outputs.all_changed_files }}"
           echo
 
           ONLY_IRRELEVANT=true
 
+          # Normalize output: split on commas or newlines
           while IFS= read -r FILE; do
+            FILE=$(echo "$FILE" | xargs) # trim whitespace
+            [[ -z "$FILE" ]] && continue
+
             MATCHED=false
             for PATTERN in "${EXCLUDED_PATTERNS[@]}"; do
               if [[ "$FILE" == $PATTERN ]]; then
@@ -117,9 +126,11 @@ jobs:
               ONLY_IRRELEVANT=false
               break
             fi
-          done <<< "${{ steps.changed.outputs.all_changed_files }}"
+          done <<< "$(echo "${{ steps.changed.outputs.all_changed_files }}" | tr ',' '\n')"
 
+          echo "🔎 Result: only_irrelevant=$ONLY_IRRELEVANT"
           echo "only_irrelevant=$ONLY_IRRELEVANT" >> "$GITHUB_OUTPUT"
+
 
       - name: Skip if only irrelevant files changed
         if: steps.check.outputs.only_irrelevant == 'true'
