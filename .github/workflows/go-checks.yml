@@ -71,11 +71,74 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@v45
+        with:
+          separator: "\n"
+
+      - name: Check if only irrelevant files changed
+        id: check
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          # Enable extended and recursive globbing for better matching
+          shopt -s globstar extglob nullglob
+
+          # Define files or glob patterns considered "irrelevant"
+          EXCLUDED_PATTERNS=(
+            "nomad.hcl"
+            "Dockerfile"
+             "**.md"
+             "nomad.hcl"
+             "*nomad.variables.hcl"
+             "Dockerfile"
+          )
+          echo "🔍 Changed files:"
+          echo "${{ steps.changed.outputs.all_changed_files }}"
+          echo
+
+          ONLY_IRRELEVANT=true
+
+          # Normalize output: split on commas or newlines
+          while IFS= read -r FILE; do
+            FILE=$(echo "$FILE" | xargs) # trim whitespace
+            [[ -z "$FILE" ]] && continue
+
+            MATCHED=false
+            for PATTERN in "${EXCLUDED_PATTERNS[@]}"; do
+              if [[ "$FILE" == "$PATTERN" ]]; then
+                MATCHED=true
+                break
+              fi
+            done
+
+            if [[ "$MATCHED" == false ]]; then
+              echo "✅ Relevant file detected: $FILE"
+              ONLY_IRRELEVANT=false
+              break
+            fi
+          done <<< "$(echo "${{ steps.changed.outputs.all_changed_files }}" | tr ',' '\n')"
+
+          echo "🔎 Result: only_irrelevant=$ONLY_IRRELEVANT"
+          echo "only_irrelevant=$ONLY_IRRELEVANT" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if only irrelevant files changed
+        if: steps.check.outputs.only_irrelevant == 'true'
+        run: |
+          echo "🟡 Only README.md and/or nomad.hcl changed. Skipping workflow."
+
       - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
+        if: steps.check.outputs.only_irrelevant != 'true'
       - uses: actions/setup-python@v5
+        if: steps.check.outputs.only_irrelevant != 'true'
       - name: Setup pre-commit
         run: python -m pip install pre-commit
+        if: steps.check.outputs.only_irrelevant != 'true'
       - name: go modules cache
+        if: steps.check.outputs.only_irrelevant != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -85,6 +148,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-mod-${{ github.job }}-
       - name: go tools cache
+        if: steps.check.outputs.only_irrelevant != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -93,33 +157,35 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-tools-${{ inputs.golang_version || env.GO_VERSION }}-${{ github.job }}
       - uses: actions/setup-go@v5
+        if: steps.check.outputs.only_irrelevant != 'true'
         with:
           go-version: ${{ inputs.golang_version || env.GO_VERSION }}
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
           ruby-version: "${{ inputs.lint-gen-ruby-version }}"
-        if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' }}"
+        if: "${{ !inputs.no-lint-gen && inputs.lint-gen-ruby-version != '' && steps.check.outputs.only_irrelevant != 'true'}}"
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: "${{ secrets.ssh_key }}"
-        if: "${{ inputs.goprivate != '' }}"
+        if: "${{ inputs.goprivate != ''&& steps.check.outputs.only_irrelevant != 'true' }}"
 
       - name: Update Git config
         run: |
           curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
           git config --global url."git@github.com:".insteadOf "https://github.com/"
-        if: "${{ inputs.goprivate != '' }}"
+        if: "${{ inputs.goprivate != '' && steps.check.outputs.only_irrelevant != 'true' }}"
 
       - run: make ${{ inputs.lint-target }}
-        if: "${{ inputs.no-lint-gen }}"
+        if: "${{ inputs.no-lint-gen && steps.check.outputs.only_irrelevant != 'true' }}"
       - run: make gen && git diff --exit-code --name-only HEAD
-        if: "${{ !inputs.no-lint-gen }}"
+        if: "${{ !inputs.no-lint-gen && steps.check.outputs.only_irrelevant != 'true' }}"
       - run: 'docker compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
-        if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
+        if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' && steps.check.outputs.only_irrelevant != 'true' }}"
       - run: make test-nocache
+        if: "${{ steps.check.outputs.only_irrelevant != 'true' && steps.check.outputs.only_irrelevant != 'true' }}"
       - run: make race-nocache
-        if: "${{ !inputs.no-race }}"
+        if: "${{ !inputs.no-race && steps.check.outputs.only_irrelevant != 'true' }}"
       - run: 'docker compose -f "${{ inputs.compose-file }}" down'
-        if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
+        if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' && steps.check.outputs.only_irrelevant != 'true' }}"
