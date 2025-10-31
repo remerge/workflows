@@ -127,12 +127,6 @@ jobs:
           echo "🟡 Only README.md and/or nomad.hcl changed. Skipping workflow."
           exit 0
 
-      - name: Skip if only irrelevant files changed
-        if: steps.changes.outputs.run != 'true'
-        run: |
-          echo "🟡 No relevant changes detected. Skipping build."
-          exit 0
-
       - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
       - name: Setup pre-commit
