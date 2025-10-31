@@ -263,7 +263,7 @@ jobs:
       - name: Build (and push) Docker image
         uses: depot/build-push-action@v1
         with:
-          project: bkhq7mc6bh
+          project: s8j5w65ctp
           token: "depot_org_f53cda4f78d627dcc1f929cd759373ea378fbbcf60325238a8d1402cef1a952f"
           context: ${{ inputs.context }}
           push: ${{ inputs.push }}
