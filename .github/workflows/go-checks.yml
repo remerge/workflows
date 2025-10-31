@@ -71,26 +71,61 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Detect meaningful changes
-        id: changes
-        uses: dorny/paths-filter@v3
+      
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@v45
         with:
-          filters: |
-            run:
-              # Exclude all irrelevant files first
-              - '!**/*.md'
-              - '!.git/**'
-              - '!gha-creds*'
-              - '!.deploy/**'
-              - '!*nomad.variables.hcl'
-              - '!.github/workflows/go-app.yml'
-              - '!.yamllint.yaml'
-              - '!Dockerfile'
-              - '!Dockerfile-2'
-              - '!no_bids.go'
+          separator: "\n"
 
-              # Include everything else (important: must come last)
-              - '**'
+      - name: Check if only irrelevant files changed
+        id: check
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          # Define "irrelevant" files that should NOT trigger a run
+          EXCLUDED_PATTERNS=(
+            "README.md"
+            "nomad.hcl"
+            ".deploy/**"
+            "*nomad.variables.hcl"
+            ".github/workflows/go-app.yml"
+            ".yamllint.yaml"
+            "Dockerfile"
+            "Dockerfile-2"
+            "no_bids.go"
+          )
+
+          echo "🔍 Changed files:"
+          echo "${{ steps.changed.outputs.all_changed_files }}"
+          echo
+
+          ONLY_IRRELEVANT=true
+
+          while IFS= read -r FILE; do
+            MATCHED=false
+            for PATTERN in "${EXCLUDED_PATTERNS[@]}"; do
+              if [[ "$FILE" == $PATTERN ]]; then
+                MATCHED=true
+                break
+              fi
+            done
+
+            if [[ "$MATCHED" == false ]]; then
+              echo "✅ Relevant file detected: $FILE"
+              ONLY_IRRELEVANT=false
+              break
+            fi
+          done <<< "${{ steps.changed.outputs.all_changed_files }}"
+
+          echo "only_irrelevant=$ONLY_IRRELEVANT" >> "$GITHUB_OUTPUT"
+
+      - name: Skip if only irrelevant files changed
+        if: steps.check.outputs.only_irrelevant == 'true'
+        run: |
+          echo "🟡 Only README.md and/or nomad.hcl changed. Skipping workflow."
+          exit 0
 
       - name: Skip if only irrelevant files changed
         if: steps.changes.outputs.run != 'true'
