@@ -116,6 +116,12 @@ on:
         required: false
         default: 1
         description: "Fetch depth for git checkout"
+      
+      build-excludes:
+        type: string
+        required: false
+        default: ""
+        description: "comma seperated list of files or folders to skip docker image build"
 
     outputs:
       image:
@@ -149,7 +155,7 @@ on:
         description: "Slack token for posting messages"
 jobs:
   build-and-push:
-    runs-on: ${{ inputs.os }} 
+    runs-on: ${{ inputs.os }}
     env:
       WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
       SERVICE_ACCOUNT: ${{ inputs.service-account }}
@@ -157,6 +163,7 @@ jobs:
       DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
       REPOSITORY: ${{ inputs.repository }}
       REPO: ${{ inputs.repo }}
+      DEFAULT_BUILD_EXCLUDES: "**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
     outputs:
       image: ${{ steps.compute_hash.outputs.image }}
     steps:
@@ -256,13 +263,16 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
-          
-          EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
+          build-excludes
+          EXCLUDES="${{ env.DEFAULT_BUILD_EXCLUDES }}"
+          if [ -n "${{ inputs.build-excludes }}" ]; then
+            EXCLUDES+=",${{ inputs.build-excludes }}"
+          fi
 
           if [ -n "${{ inputs.tag }}" ]; then
             echo "🔖 Tag '${{ inputs.tag }}' provided — skipping hash computation."
             IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${{ inputs.tag }}"
-            TAG="${{ inputs.tag }}" 
+            TAG="${{ inputs.tag }}"
             EXISTS="false" # Assume not built yet — can still be checked later if desired
           else
             # Enable extended globbing and recursive globs (**)
@@ -304,7 +314,6 @@ jobs:
           # Print for debugging
           echo "IMAGE=${IMAGE}"
           echo "EXISTS=${EXISTS}"
-
 
       - name: Print results
         run: |
