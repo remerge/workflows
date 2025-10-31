@@ -149,7 +149,7 @@ on:
         description: "Slack token for posting messages"
 jobs:
   build-and-push:
-    runs-on: ${{ inputs.os }}
+    runs-on: ${{ inputs.os }} 
     env:
       WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload-identity-provider }}
       SERVICE_ACCOUNT: ${{ inputs.service-account }}
@@ -256,50 +256,53 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
-          EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
 
-          # Enable extended globbing and recursive globs (**)
-          shopt -s globstar extglob nullglob
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "🔖 Tag '${{ inputs.tag }}' provided — skipping hash computation."
+            IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${{ inputs.tag }}"
+            EXISTS="false" # Assume not built yet — can still be checked later if desired
+          else
+            EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
 
-          # Build find command dynamically
-          FIND_CMD=(find . -type f)
+            # Enable extended globbing and recursive globs (**)
+            shopt -s globstar extglob nullglob
 
-          IFS=',' read -ra PATTERNS <<<"$EXCLUDES"
-          for pattern in "${PATTERNS[@]}"; do
-              # Trim whitespace
+            # Build find command dynamically
+            FIND_CMD=(find . -type f)
+
+            IFS=',' read -ra PATTERNS <<<"$EXCLUDES"
+            for pattern in "${PATTERNS[@]}"; do
               pattern=$(echo "$pattern" | xargs)
               [[ -n $pattern ]] && FIND_CMD+=(! -path "./$pattern")
-          done
+            done
 
-          # Compute deterministic content-based hash
-          TAG=$("${FIND_CMD[@]}" -exec sha256sum {} \; | sort | sha256sum | cut -d' ' -f1)
+            # Compute deterministic content-based hash
+            TAG=$("${FIND_CMD[@]}" -exec sha256sum {} \; | sort | sha256sum | cut -d' ' -f1)
 
-          IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${TAG}"
-  
-          # Check if image exists in registry
-          if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+            IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${TAG}"
+
+            # Check if image exists in registry
+            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
               echo "✅ Image $IMAGE already exists - skipping build"
               EXISTS="true"
-          else
+            else
               echo "🚀 Image $IMAGE not found — proceed to build"
               EXISTS="false"
+            fi
           fi
 
-          # Export values for GitHub Actions (if running inside a workflow)
-          if [[ -n ${GITHUB_ENV:-} ]]; then
-              echo "image=${IMAGE}" >>"$GITHUB_ENV"
-              echo "image_exists=${EXISTS}" >>"$GITHUB_ENV"
-              echo "tag=${TAG}" >>"$GITHUB_ENV"
-          fi
+          # Export values for GitHub Actions
+          {
+            echo "image=${IMAGE}"
+            echo "image_exists=${EXISTS}"
+            echo "tag=${{ inputs.tag || TAG }}"
+          } >> "$GITHUB_ENV"
 
-          if [[ -n ${GITHUB_OUTPUT:-} ]]; then
-              echo "image=${IMAGE}" >>"$GITHUB_OUTPUT"
-          fi
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
 
-          # Also print for local debugging
+          # Print for debugging
           echo "IMAGE=${IMAGE}"
           echo "EXISTS=${EXISTS}"
-
 
 
       - name: Print results
