@@ -77,19 +77,21 @@ jobs:
         with:
           filters: |
             run:
-              # Match any file that is NOT in excluded patterns
-              - '!**/*.md'             # exclude Markdown
-              - '!.git/**'             # exclude .git
-              - '!gha-creds*'          # exclude gha creds
-              - '!.deploy/**'          # exclude deploy dir
-              - '!nomad.hcl'           # exclude nomad files
+              # Exclude all irrelevant files first
+              - '!**/*.md'
+              - '!.git/**'
+              - '!gha-creds*'
+              - '!.deploy/**'
+              - '!nomad.hcl'
               - '!*nomad.variables.hcl'
               - '!.github/workflows/go-app.yml'
               - '!.yamllint.yaml'
               - '!Dockerfile'
               - '!Dockerfile-2'
               - '!no_bids.go'
-              - '**' # include everything by default
+
+              # Include everything else (important: must come last)
+              - '**'
 
       - name: Skip if only irrelevant files changed
         if: steps.changes.outputs.run != 'true'
