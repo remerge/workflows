@@ -260,6 +260,7 @@ jobs:
           if [ -n "${{ inputs.tag }}" ]; then
             echo "🔖 Tag '${{ inputs.tag }}' provided — skipping hash computation."
             IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${{ inputs.tag }}"
+            TAG="${{ inputs.tag }}" 
             EXISTS="false" # Assume not built yet — can still be checked later if desired
           else
             EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
@@ -295,7 +296,7 @@ jobs:
           {
             echo "image=${IMAGE}"
             echo "image_exists=${EXISTS}"
-            echo "tag="${{ inputs.tag }}" || "${TAG}""
+            echo "tag="${TAG}"
           } >> "$GITHUB_ENV"
 
           echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
