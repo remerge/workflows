@@ -71,6 +71,25 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Detect meaningful changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            run:
+              # Match anything NOT in excluded patterns
+              - '!**/*.md'
+              - '!.git/**'
+              - '!gha-creds*'
+              - '!.deploy/**'
+              - '!nomad.hcl'
+              - '!*nomad.variables.hcl'
+              - '**' # fallback — include everything else
+      - name: Skip if only docs or irrelevant files changed
+        if: steps.changes.outputs.run != 'true'
+        run: |
+          echo "No relevant changes detected. Skipping build."
+          exit 0
       - run: echo "GO_VERSION=$(grep '^go ' < go.mod | awk '{print $2}')" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v5
       - name: Setup pre-commit
