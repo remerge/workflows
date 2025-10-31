@@ -256,6 +256,8 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -euo pipefail
+          
+          EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
 
           if [ -n "${{ inputs.tag }}" ]; then
             echo "🔖 Tag '${{ inputs.tag }}' provided — skipping hash computation."
@@ -263,8 +265,6 @@ jobs:
             TAG="${{ inputs.tag }}" 
             EXISTS="false" # Assume not built yet — can still be checked later if desired
           else
-            EXCLUDES="**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
-
             # Enable extended globbing and recursive globs (**)
             shopt -s globstar extglob nullglob
 
