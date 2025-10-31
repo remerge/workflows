@@ -85,6 +85,12 @@ jobs:
               - '!nomad.hcl'
               - '!*nomad.variables.hcl'
               - '**' # fallback — include everything else
+              - '!.github/workflows/go-app.yml'
+              - '!.yamllint.yaml'
+              - '!Dockerfile'
+              - '!Dockerfile-2'
+              - '!no_bids.go'
+              - '!nomad.hcl'
       - name: Skip if only docs or irrelevant files changed
         if: steps.changes.outputs.run != 'true'
         run: |
