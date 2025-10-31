@@ -90,16 +90,10 @@ jobs:
           # Define files or glob patterns considered "irrelevant"
           EXCLUDED_PATTERNS=(
             "nomad.hcl"
-            "*nomad.variables.hcl"
             "Dockerfile"
-            "no_bids.go"
-
              "**.md"
              "nomad.hcl"
-             ".deploy/**"
              "*nomad.variables.hcl"
-             ".github/workflows/go-app.yml"
-             ".yamllint.yaml"
              "Dockerfile"
           )
           echo "🔍 Changed files:"
