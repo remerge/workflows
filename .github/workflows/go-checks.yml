@@ -71,7 +71,7 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Get changed files
         id: changed
         uses: tj-actions/changed-files@v45
@@ -109,7 +109,7 @@ jobs:
 
             MATCHED=false
             for PATTERN in "${EXCLUDED_PATTERNS[@]}"; do
-              if [[ "$FILE" == $PATTERN ]]; then
+              if [[ "$FILE" == "$PATTERN" ]]; then
                 MATCHED=true
                 break
               fi
@@ -124,7 +124,6 @@ jobs:
 
           echo "🔎 Result: only_irrelevant=$ONLY_IRRELEVANT"
           echo "only_irrelevant=$ONLY_IRRELEVANT" >> "$GITHUB_OUTPUT"
-
 
       - name: Skip if only irrelevant files changed
         if: steps.check.outputs.only_irrelevant == 'true'
