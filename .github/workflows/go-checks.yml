@@ -82,7 +82,6 @@ jobs:
               - '!.git/**'
               - '!gha-creds*'
               - '!.deploy/**'
-              - '!nomad.hcl'
               - '!*nomad.variables.hcl'
               - '!.github/workflows/go-app.yml'
               - '!.yamllint.yaml'
