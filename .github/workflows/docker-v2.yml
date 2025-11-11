@@ -111,7 +111,7 @@ jobs:
 
       - name: Update Git config
         run: |
-          curl -L https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
+          curl -f -L --retry 5 --retry-delay 1 https://api.github.com/meta | jq -r '.ssh_keys | .[]' | sed -e 's/^/github.com /' >> ~/.ssh/known_hosts
           git config --global url."git@github.com:".insteadOf "https://github.com/"
 
       - if: ${{ inputs.gen-cache-key && inputs.gen-cache-path }}
