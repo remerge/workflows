@@ -37,7 +37,7 @@ jobs:
 
       - name: Setup Git
         run: |
-          curl -sL https://api.github.com/meta | jq -r '"github.com "+.ssh_keys[]' >> ~/.ssh/known_hosts
+          curl -f -sL --retry 5 --retry-delay 1 https://api.github.com/meta | jq -r '"github.com "+.ssh_keys[]' >> ~/.ssh/known_hosts
           git config --global url."git@github.com:".insteadOf "https://github.com/"
           git config --global advice.detachedHead false
 
