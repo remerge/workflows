@@ -20,7 +20,7 @@ on:
       test-target:
         type: string
         required: false
-        default: "race"
+        default: "race-nocache"
         description: "Test Make target"
       no-race:
         type: boolean
