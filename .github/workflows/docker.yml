@@ -71,6 +71,12 @@ on:
         default: ubuntu-latest
         required: false
 
+      use-thirdparty-runner:
+        description: "Whether to use Thirdparty runner"
+        type: boolean
+        default: false
+        required: false
+
       gen-cache-key:
         description: |
           "Key of a cache where previous steps generated files. If your project
@@ -214,8 +220,13 @@ jobs:
           path: |
             ${{ inputs.gen-cache-path}}
 
-      - name: Set up Docker Buildx
+      - if: ${{ inputs.use-thirdparty-runner }}
+        name: Set up third party Docker Buildx
         uses: useblacksmith/setup-docker-builder@v1
+
+      - if: ${{ !inputs.use-thirdparty-runner }}
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       # Auth with gar_service_account_key
       # to be deprecated
@@ -260,7 +271,8 @@ jobs:
             type=sha
             ${{ inputs.tag }}
 
-      - name: Build (and push) Docker image
+      - if: ${{ inputs.use-thirdparty-runner }}
+        name: Build (and push) Docker image for thirparty runner
         uses: useblacksmith/build-push-action@v2
         with:
           context: ${{ inputs.context }}
@@ -279,6 +291,29 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
+
+      - if: ${{ !inputs.use-thirdparty-runner }}
+        name: Build (and push) Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.context }}
+          push: ${{ inputs.push }}
+          file: ${{ inputs.dockerfile }}
+          secrets: ${{ secrets.build-secrets }}
+          build-args: |
+            ${{ inputs.build-args }}
+            CI_COMMIT=${{ github.sha }}
+            CI_REPO=${{ github.event.repository.name }}
+            CI_NUM=${{ github.run_id }}
+            BUILD_COMMIT=${{ github.sha }}
+            BUILD_REPO=${{ github.event.repository.name }}
+            BUILD_ID=${{ github.run_id }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          target: ${{ inputs.target }}
+          ssh: default
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - uses: remerge/action-slack-deploy-pipeline@v2.0.0-remerge
         if: ${{ always() && inputs.slack-thread-ts != '' }}
