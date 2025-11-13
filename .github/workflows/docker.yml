@@ -66,9 +66,9 @@ on:
         description: "Whether to push the image to the registry"
 
       os:
-        description: "OS version to run the workflow on. If not provided, defaults to 'ubuntu-latest'"
+        description: "OS version to run the workflow on. If not provided, defaults to 'blacksmith-4vcpu-ubuntu-2404'"
         type: string
-        default: ubuntu-latest
+        default: blacksmith-4vcpu-ubuntu-2404
         required: false
 
       use-thirdparty-runner:
