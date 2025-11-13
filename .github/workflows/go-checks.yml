@@ -17,11 +17,16 @@ on:
         required: false
         default: "github.com/remerge"
         description: "Set GOPRIVATE"
+      test-target:
+        type: string
+        required: false
+        default: "race-nocache"
+        description: "Test Make target"
       no-race:
         type: boolean
         required: false
         default: false
-        description: "Run race detector"
+        description: "DEPRECATED. Run tests with race detector disabled"
       lint-target:
         type: string
         required: false
@@ -118,8 +123,6 @@ jobs:
         if: "${{ !inputs.no-lint-gen }}"
       - run: 'docker compose -f "${{ inputs.compose-file }}" up -d --build && sleep ${{ inputs.compose-wait }}'
         if: "${{ !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
-      - run: make test-nocache
-      - run: make race-nocache
-        if: "${{ !inputs.no-race }}"
+      - run: make ${{ inputs.test-target }}
       - run: 'docker compose -f "${{ inputs.compose-file }}" down'
         if: "${{ always() && !inputs.no-compose && hashFiles(inputs.compose-file) != '' }}"
