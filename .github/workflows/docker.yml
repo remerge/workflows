@@ -74,7 +74,7 @@ on:
       use-thirdparty-runner:
         description: "Whether to use Thirdparty runner"
         type: boolean
-        default: false
+        default: true
         required: false
 
       gen-cache-key:
