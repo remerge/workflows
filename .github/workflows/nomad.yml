@@ -62,7 +62,7 @@ on:
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'blacksmith-4vcpu-ubuntu-2204'"
         type: string
-        default: blacksmith-4vcpu-ubuntu-2204
+        default: ubuntu-latest
         required: false
     secrets:
       nomad_token:
