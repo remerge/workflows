@@ -68,7 +68,7 @@ on:
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'blacksmith-4vcpu-ubuntu-2404'"
         type: string
-        default: blacksmith-4vcpu-ubuntu-2404
+        default: ubuntu-latest
         required: false
 
       use-thirdparty-runner:
