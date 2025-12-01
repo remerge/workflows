@@ -68,13 +68,13 @@ on:
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'blacksmith-4vcpu-ubuntu-2404'"
         type: string
-        default: ubuntu-latest
+        default: blacksmith-4vcpu-ubuntu-2404
         required: false
 
       use-thirdparty-runner:
         description: "Whether to use Thirdparty runner"
         type: boolean
-        default: false
+        default: true
         required: false
 
       gen-cache-key:
