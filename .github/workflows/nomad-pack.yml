@@ -70,7 +70,7 @@ on:
       nomad_pack_version:
         required: false
         type: string
-        default: "0.1.1"
+        default: "0.4.1"
         description: Hashicorp Nomad Pack version to use
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'blacksmith-4vcpu-ubuntu-2204'"
@@ -192,7 +192,7 @@ jobs:
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var-file=${{ inputs.variables_file_name }} \
+          --var-file=${{ inputs.variables_file_name }} --ignore-missing-vars  \
           --name=${{ inputs.name }} --registry=remerge-pack \
           | tail -n +2 | nomad job validate -
 
@@ -211,7 +211,7 @@ jobs:
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var-file=${{ inputs.variables_file_name }} \
+          --var-file=${{ inputs.variables_file_name }} --ignore-missing-vars  \
           --name=${{ inputs.name }} --registry=remerge-pack  \
           --exit-code-makes-changes=0)
 
