@@ -70,7 +70,7 @@ on:
       nomad_pack_version:
         required: false
         type: string
-        default: "0.1.1"
+        default: "0.4.1"
         description: Hashicorp Nomad Pack version to use
       os:
         description: "OS version to run the workflow on. If not provided, defaults to 'blacksmith-4vcpu-ubuntu-2204'"
