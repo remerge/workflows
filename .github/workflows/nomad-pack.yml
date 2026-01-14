@@ -192,7 +192,7 @@ jobs:
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var-file=${{ inputs.variables_file_name }} -ignore-missing-vars  \
+          --var-file=${{ inputs.variables_file_name }} --ignore-missing-vars  \
           --name=${{ inputs.name }} --registry=remerge-pack \
           | tail -n +2 | nomad job validate -
 
@@ -211,7 +211,7 @@ jobs:
           --var='cluster=${{ inputs.cluster }}' \
           --var='environment=${{ inputs.environment }}' \
           --var='code_version=${{ inputs.code_version || steps.checkout.outputs.commit }}' \
-          --var-file=${{ inputs.variables_file_name }} -ignore-missing-vars  \
+          --var-file=${{ inputs.variables_file_name }} --ignore-missing-vars  \
           --name=${{ inputs.name }} --registry=remerge-pack  \
           --exit-code-makes-changes=0)
 
