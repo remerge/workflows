@@ -123,6 +123,12 @@ on:
         default: 1
         description: "Fetch depth for git checkout"
 
+      build-excludes:
+        type: string
+        required: false
+        default: ""
+        description: "comma seperated list of files or folders to skip docker image build"
+
     outputs:
       image:
         description: "Full path of produced image"
@@ -163,8 +169,9 @@ jobs:
       DEPLOY_USER_SSH_KEY: ${{ secrets.deploy_user_ssh_key }}
       REPOSITORY: ${{ inputs.repository }}
       REPO: ${{ inputs.repo }}
+      DEFAULT_BUILD_EXCLUDES: "**/*.md,.git/*,gha-creds*,.deploy,nomad.hcl,*nomad.variables.hcl"
     outputs:
-      image: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.compute_hash.outputs.image }}
     steps:
       - name: Set Variables
         run: |
@@ -262,6 +269,67 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth_with_workload_identity.outputs.access_token }}
 
+      - name: Compute hash and check if image exists
+        id: compute_hash
+        run: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+          EXCLUDES="${{ env.DEFAULT_BUILD_EXCLUDES }}"
+          if [ -n "${{ inputs.build-excludes }}" ]; then
+            EXCLUDES+=",${{ inputs.build-excludes }}"
+          fi
+
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "🔖 Tag '${{ inputs.tag }}' provided — skipping hash computation."
+            IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${{ inputs.tag }}"
+            TAG="${{ inputs.tag }}"
+            EXISTS="false" # Assume not built yet — can still be checked later if desired
+          else
+            # Enable extended globbing and recursive globs (**)
+            shopt -s globstar extglob nullglob
+
+            # Build find command dynamically
+            FIND_CMD=(find . -type f)
+
+            IFS=',' read -ra PATTERNS <<<"$EXCLUDES"
+            for pattern in "${PATTERNS[@]}"; do
+              pattern=$(echo "$pattern" | xargs)
+              [[ -n $pattern ]] && FIND_CMD+=(! -path "./$pattern")
+            done
+
+            # Compute deterministic content-based hash
+            TAG=$("${FIND_CMD[@]}" -exec sha256sum {} \; | sort | sha256sum | cut -d' ' -f1)
+
+            IMAGE="${{ inputs.registry }}/${{ inputs.project }}/${{ env.REPOSITORY }}/${{ inputs.image }}:${TAG}"
+
+            # Check if image exists in registry
+            if docker manifest inspect "$IMAGE" >/dev/null 2>&1; then
+              echo "✅ Image $IMAGE already exists - skipping build"
+              EXISTS="true"
+            else
+              echo "🚀 Image $IMAGE not found — proceed to build"
+              EXISTS="false"
+            fi
+          fi
+
+          # Export values for GitHub Actions
+          {
+            echo "image=${IMAGE}"
+            echo "image_exists=${EXISTS}"
+            echo "tag=${TAG}"
+          } >> "$GITHUB_ENV"
+
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+          # Print for debugging
+          echo "IMAGE=${IMAGE}"
+          echo "EXISTS=${EXISTS}"
+
+      - name: Print results
+        run: |
+          echo "Computed tag: ${{ env.image }}"
+          echo "Image exists: ${{ env.image_exists }}"
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -295,6 +363,7 @@ jobs:
       - if: ${{ !inputs.use-thirdparty-runner }}
         name: Build (and push) Docker image
         uses: docker/build-push-action@v5
+        if: env.image_exists == 'false'
         with:
           context: ${{ inputs.context }}
           push: ${{ inputs.push }}
@@ -308,7 +377,9 @@ jobs:
             BUILD_COMMIT=${{ github.sha }}
             BUILD_REPO=${{ github.event.repository.name }}
             BUILD_ID=${{ github.run_id }}
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.image }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ inputs.target }}
           ssh: default
